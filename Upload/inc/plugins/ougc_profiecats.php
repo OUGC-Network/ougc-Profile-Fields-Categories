@@ -35,6 +35,17 @@ if(defined('IN_ADMINCP'))
 {
 	$plugins->add_hook('admin_config_profile_fields_begin', 'ougc_profiecats_admin');
 }
+else
+{
+	$plugins->add_hook('global_intermediate', 'ougc_profiecats_global');
+	$plugins->add_hook('xmlhttp', 'ougc_profiecats_global');
+	/*$plugins->add_hook('postbit', 'foruminf_postbit');
+	$plugins->add_hook('xmlhttp_update_post', 'foruminf_xmlhttp');*/
+	$plugins->add_hook('newthread_start', 'ougc_profiecats_newthread');
+	$plugins->add_hook('newthread_do_newthread_start', 'ougc_profiecats_newthread');
+	$plugins->add_hook('usercp_profile_end', 'ougc_profiecats_usercp_profile_end');
+	$plugins->add_hook('member_profile_end', 'ougc_profiecats_profile_end');
+}
 
 // Plugin API
 function ougc_profiecats_info()
@@ -266,7 +277,32 @@ function ougc_profiecats_admin()
 	}
 	elseif($mybb->get_input('do') == 'delete')
 	{
-		return;
+		if(!($category = $profiecats->get_category($mybb->get_input('cid', 1))))
+		{
+			flash_message($lang->ougc_profiecats_admin_error_invalid_category, 'error');
+			admin_redirect($sub_tabs['ougc_profiecats_admin_tab']['link']);
+		}
+
+		if($mybb->request_method == 'post')
+		{
+			if(!verify_post_check($mybb->input['my_post_key'], true))
+			{
+				flash_message($lang->invalid_post_verify_key2, 'error');
+				admin_redirect($sub_tabs['ougc_profiecats_admin_tab']['link']);
+			}
+
+			!isset($mybb->input['no']) or admin_redirect($sub_tabs['ougc_profiecats_admin_tab']['link']);
+
+			$profiecats->delete_category($category['cid']);
+
+			$profiecats->update_cache();
+			$profiecats->log_action();
+
+			flash_message($lang->ougc_profiecats_admin_success_delete, 'success');
+			admin_redirect($sub_tabs['ougc_profiecats_admin_tab']['link']);
+		}
+
+		$page->output_confirm_action($sub_tabs['ougc_profiecats_admin_tab']['link'].'&amp;do=delete&amp;cid='.$mybb->get_input('cid', 1));
 	}
 	else
 	{
@@ -280,6 +316,8 @@ function ougc_profiecats_admin()
 		$table->construct_header($lang->ougc_profiecats_admin_required, array('width' => '10%', 'class' => 'align_center'));
 		$table->construct_header($lang->ougc_profiecats_admin_disporder, array('width' => '15%', 'class' => 'align_center'));
 		$table->construct_header($lang->options, array('width' => '10%', 'class' => 'align_center'));
+
+		isset($mybb->input['limit']) or $mybb->input['limit'] = 20;
 
 		$limit = (int)$mybb->get_input('limit', 1);
 		$limit = $limit > 100 ? 100 : ($limit < 1 ? 1 : $limit);
@@ -319,7 +357,7 @@ function ougc_profiecats_admin()
 			$query2 = $db->simple_select('ougc_profiecats_categories', 'COUNT(cid) AS categories');
 			$catscount = (int)$db->fetch_field($query2, 'categories');
 
-			echo draw_admin_pagination($mybb->get_input('page', 1), $limit, $catscount, $sub_tabs['ougc_profiecats_admin_tab']['link']);
+			echo draw_admin_pagination($mybb->get_input('page', 1), $limit, $catscount, $sub_tabs['ougc_profiecats_admin_tab']['link'].'&amp;limit='.$limit);
 
 			while($category = $db->fetch_array($query))
 			{
@@ -355,7 +393,7 @@ function ougc_profiecats_admin_field()
 {
 	global $run_module, $form_container, $lang;
 
-	if($run_module == 'config' && ($form_container->_title == $lang->edit_profile_field || $form_container->_title == $lang->add_profile_field))
+	if($run_module == 'config' && ($form_container->_title == $lang->edit_profile_field || $form_container->_title == $lang->add_new_profile_field))
 	{
 		global $form, $mybb, $profiecats, $profile_field;
 		$profiecats->lang_load();
@@ -411,6 +449,394 @@ function ougc_profiecats_admin_hijack()
 	');
 }
 
+// Break down categorization here
+function ougc_profiecats_global()
+{
+	global $cache, $profiecats;
+
+	$pfcache = $cache->read('profilefields');
+	$pfcache = &$cache->cache['profilefields'];
+
+	foreach($pfcache as $key => $field)
+	{
+		if(!$field['cid'])
+		{
+			continue;
+		}
+
+		$profiecats->cache[$field['cid']][$field['fid']] = $field;
+		unset($pfcache[$key]);
+	}
+}
+
+// New thread
+function ougc_profiecats_newthread()
+{
+	global $mybb, $profiecats, $fid;
+
+	$categories = (array)$mybb->cache->read('ougc_profiecats_categories');
+
+	foreach($categories as $category)
+	{
+		if(!isset($profiecats->cache[$category['cid']]))
+		{
+			continue;
+		}
+
+		if(!$category['required'])
+		{
+			continue;
+		}
+
+		if(my_strpos(','.$category['forums'].',', ','.$fid.',') === false)
+		{
+			continue;
+		}
+
+		$fields = $profiecats->cache[$category['cid']];
+		foreach($fields as $field)
+		{
+			if(!$field['required'])
+			{
+				continue;
+			}
+
+			$fid = (int)$field['fid'];
+			if(/*isset($mybb->user['fid'.$fid]) && */empty($mybb->user['fid'.$fid]))
+			{
+		error("Please fill your {{{$fid}::{$field['name']}}} field.");
+			}
+		}
+	}
+}
+
+// Profile display
+function ougc_profiecats_profile_end()
+{
+	global $mybb, $userfields, $parser, $templates, $theme, $lang, $memprofile, $bgcolor, $profiecats;
+
+	$profiecats->backup['lang_users_additional_info'] = $lang->users_additional_info;
+
+	$categories = (array)$mybb->cache->read('ougc_profiecats_categories');
+
+	// Most of this code belongs to MYBB::member.php Lines #2452 ~ #2529
+	foreach($profiecats->cache as $cid => $custom_fields)
+	{
+		if(!($category = $categories[$cid]))
+		{
+			continue;
+		}
+
+		$profiecats->output[$cid] = '';
+
+		$lang->users_additional_info = "{$category['name']} Info About {$memprofile['username']}";
+
+		$customfields = '';
+		foreach($custom_fields as $customfield)
+		{
+			if($mybb->usergroup['cancp'] != 1 && $mybb->usergroup['issupermod'] != 1 && $mybb->usergroup['canmodcp'] != 1 && ($customfield['viewableby'] == -1 || !is_member($customfield['viewableby'])))
+			{
+				continue;
+			}
+
+			$thing = explode("\n", $customfield['type'], "2");
+			$type = trim($thing[0]);
+
+			$customfieldval = $customfield_val = '';
+			$field = "fid{$customfield['fid']}";
+
+			if(isset($userfields[$field]))
+			{
+				$useropts = explode("\n", $userfields[$field]);
+				$customfieldval = $comma = '';
+				if(is_array($useropts) && ($type == "multiselect" || $type == "checkbox"))
+				{
+					foreach($useropts as $val)
+					{
+						if($val != '')
+						{
+							eval("\$customfield_val .= \"".$templates->get("member_profile_customfields_field_multi_item")."\";");
+						}
+					}
+					if($customfield_val != '')
+					{
+						eval("\$customfieldval = \"".$templates->get("member_profile_customfields_field_multi")."\";");
+					}
+				}
+				else
+				{
+					$parser_options = array(
+						"allow_html" => $customfield['allowhtml'],
+						"allow_mycode" => $customfield['allowmycode'],
+						"allow_smilies" => $customfield['allowsmilies'],
+						"allow_imgcode" => $customfield['allowimgcode'],
+						"allow_videocode" => $customfield['allowvideocode'],
+						#"nofollow_on" => 1,
+						"filter_badwords" => 1
+					);
+
+					if($customfield['type'] == "textarea")
+					{
+						$parser_options['me_username'] = $memprofile['username'];
+					}
+					else
+					{
+						$parser_options['nl2br'] = 0;
+					}
+
+					if($mybb->user['showimages'] != 1 && $mybb->user['uid'] != 0 || $mybb->settings['guestimages'] != 1 && $mybb->user['uid'] == 0)
+					{
+						$parser_options['allow_imgcode'] = 0;
+					}
+
+					$customfieldval = $parser->parse_message($userfields[$field], $parser_options);
+				}
+			}
+			
+			if($customfieldval)
+			{
+				$customfield['name'] = htmlspecialchars_uni($customfield['name']);
+				eval("\$customfields .= \"".$templates->get("member_profile_customfields_field")."\";");
+				$bgcolor = alt_trow();
+			}
+		}
+
+		if($customfields)
+		{
+			eval("\$profiecats->output[{$cid}] = \"".$templates->get("member_profile_customfields")."\";");
+		}
+	}
+
+	!isset($profiecats->backup['lang_users_additional_info']) or $lang->users_additional_info = $profiecats->backup['lang_users_additional_info'];
+}
+
+// UCP Display
+function ougc_profiecats_usercp_profile_end()
+{
+	global $mybb, $userfields, $parser, $templates, $theme, $lang, $memprofile, $bgcolor, $user, $errors, $profiecats;
+
+	$profiecats->backup['lang_additional_information'] = $lang->additional_information;
+
+	$categories = (array)$mybb->cache->read('ougc_profiecats_categories');
+
+	// Most of this code belongs to MYBB::usercp.php Lines #516 ~ #708
+	foreach($profiecats->cache as $cid => $profilefields)
+	{
+		if(!($category = $categories[$cid]))
+		{
+			continue;
+		}
+
+		$profiecats->output[$cid] = '';
+
+		$lang->additional_information = $category['name'];
+
+		foreach($profilefields as $profilefield)
+		{
+			if(/**/$profilefield['editableby'] != -1 && /**/!is_member($profilefield['editableby']) || ($profilefield['postnum'] && $profilefield['postnum'] > $mybb->user['postnum']))
+			{
+				continue;
+			}
+
+			$profilefield['type'] = htmlspecialchars_uni($profilefield['type']);
+			$profilefield['name'] = htmlspecialchars_uni($profilefield['name']);
+			$profilefield['description'] = htmlspecialchars_uni($profilefield['description']);
+			$thing = explode("\n", $profilefield['type'], "2");
+			$type = $thing[0];
+			if(isset($thing[1]))
+			{
+				$options = $thing[1];
+			}
+			else
+			{
+				$options = array();
+			}
+			$field = "fid{$profilefield['fid']}";
+			$select = '';
+			if($errors)
+			{
+				if(!isset($mybb->input['profile_fields'][$field]))
+				{
+					$mybb->input['profile_fields'][$field] = '';
+				}
+				$userfield = $mybb->input['profile_fields'][$field];
+			}
+			else
+			{
+				$userfield = $user[$field];
+			}
+			if($type == "multiselect")
+			{
+				if($errors)
+				{
+					$useropts = $userfield;
+				}
+				else
+				{
+					$useropts = explode("\n", $userfield);
+				}
+				if(is_array($useropts))
+				{
+					foreach($useropts as $key => $val)
+					{
+						$val = htmlspecialchars_uni($val);
+						$seloptions[$val] = $val;
+					}
+				}
+				$expoptions = explode("\n", $options);
+				if(is_array($expoptions))
+				{
+					foreach($expoptions as $key => $val)
+					{
+						$val = trim($val);
+						$val = str_replace("\n", "\\n", $val);
+
+						$sel = "";
+						if($val == $seloptions[$val])
+						{
+							$sel = " selected=\"selected\"";
+						}
+
+						eval("\$select .= \"".$templates->get("usercp_profile_profilefields_select_option")."\";");
+					}
+					if(!$profilefield['length'])
+					{
+						$profilefield['length'] = 3;
+					}
+
+					eval("\$code = \"".$templates->get("usercp_profile_profilefields_multiselect")."\";");
+				}
+			}
+			elseif($type == "select")
+			{
+				$expoptions = explode("\n", $options);
+				if(is_array($expoptions))
+				{
+					foreach($expoptions as $key => $val)
+					{
+						$val = trim($val);
+						$val = str_replace("\n", "\\n", $val);
+						$sel = "";
+						if($val == htmlspecialchars_uni($userfield))
+						{
+							$sel = " selected=\"selected\"";
+						}
+
+						eval("\$select .= \"".$templates->get("usercp_profile_profilefields_select_option")."\";");
+					}
+					if(!$profilefield['length'])
+					{
+						$profilefield['length'] = 1;
+					}
+
+					eval("\$code = \"".$templates->get("usercp_profile_profilefields_select")."\";");
+				}
+			}
+			elseif($type == "radio")
+			{
+				$expoptions = explode("\n", $options);
+				if(is_array($expoptions))
+				{
+					foreach($expoptions as $key => $val)
+					{
+						$checked = "";
+						if($val == $userfield)
+						{
+							$checked = " checked=\"checked\"";
+						}
+
+						eval("\$code .= \"".$templates->get("usercp_profile_profilefields_radio")."\";");
+					}
+				}
+			}
+			elseif($type == "checkbox")
+			{
+				if($errors)
+				{
+					$useropts = $userfield;
+				}
+				else
+				{
+					$useropts = explode("\n", $userfield);
+				}
+				if(is_array($useropts))
+				{
+					foreach($useropts as $key => $val)
+					{
+						$seloptions[$val] = $val;
+					}
+				}
+				$expoptions = explode("\n", $options);
+				if(is_array($expoptions))
+				{
+					foreach($expoptions as $key => $val)
+					{
+						$checked = "";
+						if($val == $seloptions[$val])
+						{
+							$checked = " checked=\"checked\"";
+						}
+
+						eval("\$code .= \"".$templates->get("usercp_profile_profilefields_checkbox")."\";");
+					}
+				}
+			}
+			elseif($type == "textarea")
+			{
+				$value = htmlspecialchars_uni($userfield);
+				eval("\$code = \"".$templates->get("usercp_profile_profilefields_textarea")."\";");
+			}
+			else
+			{
+				$value = htmlspecialchars_uni($userfield);
+				$maxlength = "";
+				if($profilefield['maxlength'] > 0)
+				{
+					$maxlength = " maxlength=\"{$profilefield['maxlength']}\"";
+				}
+
+				eval("\$code = \"".$templates->get("usercp_profile_profilefields_text")."\";");
+			}
+
+			if($profilefield['required'] == 1)
+			{
+				eval("\$requiredfields .= \"".$templates->get("usercp_profile_customfield")."\";");
+			}
+			else
+			{
+				eval("\$customfields .= \"".$templates->get("usercp_profile_customfield")."\";");
+			}
+			$altbg = alt_trow();
+			$code = "";
+			$select = "";
+			$val = "";
+			$options = "";
+			$expoptions = "";
+			$useropts = "";
+			$seloptions = "";
+		}
+
+		if($requiredfields)
+		{
+			$requiredfields = '<tr><td class="tcat">Required:</td></tr>'.$requiredfields;
+
+			if($customfields)
+			{
+				$customfields = '<tr><td class="tcat">Optional:</td></tr>'.$customfields;
+			}
+
+			$customfields = $requiredfields.$customfields;
+		}
+
+		if($customfields)
+		{
+			eval("\$profiecats->output[{$cid}] = \"".$templates->get("usercp_profile_profilefields")."\";");
+		}
+	}
+
+	!isset($profiecats->backup['lang_additional_information']) or $lang->additional_information = $profiecats->backup['lang_additional_information'];
+}
+
 // control_object by Zinga Burga from MyBBHacks ( mybbhacks.zingaburga.com ), 1.62
 if(!function_exists('control_object'))
 {
@@ -457,7 +883,6 @@ if(!function_exists('control_object'))
 // Plugin Class
 class OUGC_PROFIECATS
 {
-
 	// Build the class
 	function __construct()
 	{
@@ -553,6 +978,16 @@ class OUGC_PROFIECATS
 	function update_category($data, $cid)
 	{
 		$this->insert_category($data, $cid, true);
+	}
+
+	// Completely delete a category from the DB
+	function delete_category($cid)
+	{
+		global $db;
+		$this->cid = (int)$cid;
+
+		$db->update_query('profilefields', array('cid' => 0), 'cid=\''.$this->cid.'\'');
+		$db->delete_query('ougc_profiecats_categories', 'cid=\''.$this->cid.'\'');
 	}
 
 	// Get a award from the DB
