@@ -44,6 +44,9 @@ else
 	$plugins->add_hook('newthread_start', 'ougc_profiecats_newthread');
 	$plugins->add_hook('newthread_do_newthread_start', 'ougc_profiecats_newthread');
 	$plugins->add_hook('usercp_profile_end', 'ougc_profiecats_usercp_profile_end');
+	$plugins->add_hook('usercp_do_profile_start', 'ougc_profiecats_revert_cache');
+	$plugins->add_hook('modcp_editprofile_end', 'ougc_profiecats_usercp_profile_end');
+	$plugins->add_hook('modcp_do_editprofile_start', 'ougc_profiecats_revert_cache');
 	$plugins->add_hook('member_profile_end', 'ougc_profiecats_profile_end');
 }
 
@@ -211,7 +214,7 @@ function ougc_profiecats_admin()
 				admin_redirect($sub_tabs['ougc_profiecats_admin_tab']['link']);
 			}
 
-			$page->add_breadcrumb_item(strip_tags($category['name']));
+			$page->add_breadcrumb_item(htmlspecialchars_uni($category['name']));
 		}
 
 		$mergeinput = array();
@@ -365,7 +368,7 @@ function ougc_profiecats_admin()
 
 				$category['active'] or $category['name'] = '<i>'.$category['name'].'</i>';
 
-				$table->construct_cell('<a href="'.$edit_link.'">'.$category['name'].'</a>');
+				$table->construct_cell('<a href="'.$edit_link.'">'.htmlspecialchars_uni($category['name']).'</a>'.$lang->sprintf($lang->ougc_profiecats_admin_desc, $category['cid']));
 				$table->construct_cell('<img src="styles/default/images/icons/bullet_o'.(!$category['active'] ? 'ff' : 'n').'.png" alt="" title="'.(!$category['active'] ? $lang->ougc_awards_form_hidden : $lang->ougc_awards_form_visible).'" />', array('class' => 'align_center'));
 				$table->construct_cell('<img src="styles/default/images/icons/bullet_o'.(!$category['required'] ? 'ff' : 'n').'.png" alt="" title="'.(!$category['required'] ? $lang->ougc_awards_form_hidden : $lang->ougc_awards_form_visible).'" />', array('class' => 'align_center'));
 
@@ -455,6 +458,7 @@ function ougc_profiecats_global()
 	global $cache, $profiecats;
 
 	$pfcache = $cache->read('profilefields');
+	$profiecats->cache['original'] = $pfcache;
 	$pfcache = &$cache->cache['profilefields'];
 
 	foreach($pfcache as $key => $field)
@@ -467,6 +471,8 @@ function ougc_profiecats_global()
 		$profiecats->cache[$field['cid']][$field['fid']] = $field;
 		unset($pfcache[$key]);
 	}
+
+	$profiecats->cache['modified'] = $pfcache;
 }
 
 // New thread
@@ -476,9 +482,10 @@ function ougc_profiecats_newthread()
 
 	$categories = (array)$mybb->cache->read('ougc_profiecats_categories');
 
+	$error = false;
 	foreach($categories as $category)
 	{
-		if(!isset($profiecats->cache[$category['cid']]))
+		if(empty($profiecats->cache[$category['cid']]))
 		{
 			continue;
 		}
@@ -493,8 +500,7 @@ function ougc_profiecats_newthread()
 			continue;
 		}
 
-		$fields = $profiecats->cache[$category['cid']];
-		foreach($fields as $field)
+		foreach($profiecats->cache[$category['cid']] as $field)
 		{
 			if(!$field['required'])
 			{
@@ -504,10 +510,19 @@ function ougc_profiecats_newthread()
 			$fid = (int)$field['fid'];
 			if(/*isset($mybb->user['fid'.$fid]) && */empty($mybb->user['fid'.$fid]))
 			{
-		error("Please fill your {{{$fid}::{$field['name']}}} field.");
+				$error = true;
+				break 2;
 			}
 		}
 	}
+
+	global $lang;
+
+	$profiecats->lang_load();
+
+	$lang->ougc_profiecats_newthread_error = $lang->sprintf($lang->ougc_profiecats_newthread_error, htmlspecialchars_uni($field['name']), htmlspecialchars_uni($category['name']), $mybb->settings['bburl']);
+
+	error($lang->ougc_profiecats_newthread_error);
 }
 
 // Profile display
@@ -519,6 +534,8 @@ function ougc_profiecats_profile_end()
 
 	$categories = (array)$mybb->cache->read('ougc_profiecats_categories');
 
+	$profiecats->lang_load();
+
 	// Most of this code belongs to MYBB::member.php Lines #2452 ~ #2529
 	foreach($profiecats->cache as $cid => $custom_fields)
 	{
@@ -529,7 +546,7 @@ function ougc_profiecats_profile_end()
 
 		$profiecats->output[$cid] = '';
 
-		$lang->users_additional_info = "{$category['name']} Info About {$memprofile['username']}";
+		$lang->users_additional_info = $lang->sprintf($lang->ougc_profiecats_users_additional_info, htmlspecialchars_uni($memprofile['username']), htmlspecialchars_uni($category['name']));
 
 		$customfields = '';
 		foreach($custom_fields as $customfield)
@@ -619,6 +636,8 @@ function ougc_profiecats_usercp_profile_end()
 
 	$categories = (array)$mybb->cache->read('ougc_profiecats_categories');
 
+	$profiecats->lang_load();
+
 	// Most of this code belongs to MYBB::usercp.php Lines #516 ~ #708
 	foreach($profiecats->cache as $cid => $profilefields)
 	{
@@ -629,7 +648,7 @@ function ougc_profiecats_usercp_profile_end()
 
 		$profiecats->output[$cid] = '';
 
-		$lang->additional_information = $category['name'];
+		$lang->additional_information = $lang->sprintf($lang->ougc_profiecats_additional_information, htmlspecialchars_uni($category['name']));
 
 		foreach($profilefields as $profilefield)
 		{
@@ -837,6 +856,25 @@ function ougc_profiecats_usercp_profile_end()
 	!isset($profiecats->backup['lang_additional_information']) or $lang->additional_information = $profiecats->backup['lang_additional_information'];
 }
 
+// Revert cache for validation
+function ougc_profiecats_revert_cache(&$dh)
+{
+	global $profiecats, $cache, $plugins;
+
+	$cache->cache['profilefields'] = $profiecats->cache['original'];
+
+	$plugins->add_hook('usercp_profile_start', 'ougc_profiecats_revert_cache_revert');
+	$plugins->add_hook('modcp_editprofile_start', 'ougc_profiecats_revert_cache_revert');
+}
+
+// Hijack it back after validation
+function ougc_profiecats_revert_cache_revert(&$dh)
+{
+	global $profiecats, $cache;
+
+	$cache->cache['profilefields'] = $profiecats->cache['modified'];
+}
+
 // control_object by Zinga Burga from MyBBHacks ( mybbhacks.zingaburga.com ), 1.62
 if(!function_exists('control_object'))
 {
@@ -893,7 +931,7 @@ class OUGC_PROFIECATS
 	{
 		global $lang;
 
-		isset($lang->setting_group_ougc_profiecats) or $lang->load('ougc_profiecats');
+		isset($lang->setting_group_ougc_profiecats) or $lang->load(defined('IN_ADMINCP') ? 'ougc_profiecats' : 'admin/ougc_profiecats');
 	}
 
 	// Log admin action
