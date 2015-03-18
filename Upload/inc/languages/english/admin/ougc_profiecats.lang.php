@@ -36,7 +36,7 @@ $l['ougc_profiecats_admin_tab'] = 'Categories';
 $l['ougc_profiecats_admin_tab_desc'] = 'Manage custom profile fields categories.';
 $l['ougc_profiecats_admin_empty'] = 'There are currently no categories to show.';
 $l['ougc_profiecats_admin_name'] = 'Name';
-$l['ougc_profiecats_admin_desc'] = '<br /><b>Templates:</b> <i>usercp_profile</i>, <i>modcp_editprofile</i>, <i>member_profile</i><br /><b>Variable:</b> {$profiecats->output[\'{1}\']}</small>';
+$l['ougc_profiecats_admin_desc'] = '<br /><b>Templates:</b> <i>usercp_profile</i>, <i>modcp_editprofile</i>, <i>member_profile</i>, <i>postbit</i>, <i>postbit_classic</i><br /><b>Variables:</b> {$GLOBALS[\'profiecats\']->output[\'{1}\']}</small>';
 $l['ougc_profiecats_admin_name_desc'] = 'Enter an unique name for this category.';
 $l['ougc_profiecats_admin_active'] = 'Active';
 $l['ougc_profiecats_admin_active_desc'] = 'Select whether this category is active.';
@@ -63,4 +63,5 @@ $l['ougc_profiecats_admin_category_desc'] = 'Select the category this profile fi
 // Front end
 $l['ougc_profiecats_additional_information'] = 'Additional Information: {1}';
 $l['ougc_profiecats_users_additional_info'] = 'Additional Info About {1}: {2}';
+$l['ougc_profiecats_postbit'] = '{1} Information';
 $l['ougc_profiecats_newthread_error'] = 'To be able to create threads in this forum you need to fill your <b>{1}</b> field under the <b>{2}</b> category in your profile control panel.<br /><br />Please fill this field before proceeding <a href="{3}/usercp.php?action=profile">here</a>.';
