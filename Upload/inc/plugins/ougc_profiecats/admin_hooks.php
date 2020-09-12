@@ -250,9 +250,11 @@ function admin_config_profile_fields_begin()
 			{
 				$edit_link = 'index.php?module=config-profile_fields&amp;action=categories&amp;do=edit&amp;cid='.$category['cid'];
 
+				$category['name'] = htmlspecialchars_uni($category['name']);
+
 				$category['active'] or $category['name'] = '<i>'.$category['name'].'</i>';
 
-				$table->construct_cell('<a href="'.$edit_link.'">'.htmlspecialchars_uni($category['name']).'</a>'.$lang->sprintf($lang->ougc_profiecats_admin_desc, $category['cid']));
+				$table->construct_cell('<a href="'.$edit_link.'">'.$category['name'].'</a>'.$lang->sprintf($lang->ougc_profiecats_admin_desc, $category['cid']));
 				$table->construct_cell('<img src="styles/default/images/icons/bullet_o'.(!$category['active'] ? 'ff' : 'n').'.png" alt="" title="'.(!$category['active'] ? $lang->ougc_awards_form_hidden : $lang->ougc_awards_form_visible).'" />', array('class' => 'align_center'));
 				$table->construct_cell('<img src="styles/default/images/icons/bullet_o'.(!$category['required'] ? 'ff' : 'n').'.png" alt="" title="'.(!$category['required'] ? $lang->ougc_awards_form_hidden : $lang->ougc_awards_form_visible).'" />', array('class' => 'align_center'));
 

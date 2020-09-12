@@ -98,11 +98,13 @@ function addHooks(string $namespace)
 // Log admin action
 function log_action()
 {
+	global profiecats;
+
 	$data = array();
 
-	if($this->cid)
+	if($profiecats->cid)
 	{
-		$data['cid'] = $this->cid;
+		$data['cid'] = $profiecats->cid;
 	}
 
 	log_admin_action($data);
@@ -150,24 +152,25 @@ function clean_ints(&$val, $implode=false)
 // Insert a new rate to the DB
 function insert_category($data, $cid=null, $update=false)
 {
-	global $db;
+	global $db, $profiecats;
 
 	$cleandata = array();
 
 	!isset($data['name']) or $cleandata['name'] = $db->escape_string($data['name']);
-	!isset($data['forums']) or $cleandata['forums'] = $db->escape_string($this->clean_ints($data['forums'], true));
+	!isset($data['forums']) or $cleandata['forums'] = $db->escape_string(clean_ints($data['forums'], true));
 	!isset($data['active']) or $cleandata['active'] = (int)$data['active'];
 	!isset($data['required']) or $cleandata['required'] = (int)$data['required'];
 	!isset($data['disporder']) or $cleandata['disporder'] = (int)$data['disporder'];
 
 	if($update)
 	{
-		$this->cid = (int)$cid;
-		$db->update_query('ougc_profiecats_categories', $cleandata, 'cid=\''.$this->cid.'\'');
+		$profiecats->cid = (int)$cid;
+
+		$db->update_query('ougc_profiecats_categories', $cleandata, 'cid=\''.$profiecats->cid.'\'');
 	}
 	else
 	{
-		$this->cid = (int)$db->insert_query('ougc_profiecats_categories', $cleandata);
+		$profiecats->cid = (int)$db->insert_query('ougc_profiecats_categories', $cleandata);
 	}
 
 	return true;
@@ -176,17 +179,19 @@ function insert_category($data, $cid=null, $update=false)
 // Update espesific rate
 function update_category($data, $cid)
 {
-	$this->insert_category($data, $cid, true);
+	insert_category($data, $cid, true);
 }
 
 // Completely delete a category from the DB
 function delete_category($cid)
 {
-	global $db;
-	$this->cid = (int)$cid;
+	global $db, $profiecats;
 
-	$db->update_query('profilefields', array('cid' => 0), 'cid=\''.$this->cid.'\'');
-	$db->delete_query('ougc_profiecats_categories', 'cid=\''.$this->cid.'\'');
+	$profiecats->cid = (int)$cid;
+
+	$db->update_query('profilefields', array('cid' => 0), 'cid=\''.$profiecats->cid.'\'');
+
+	$db->delete_query('ougc_profiecats_categories', 'cid=\''.$profiecats->cid.'\'');
 }
 
 // Get a award from the DB
