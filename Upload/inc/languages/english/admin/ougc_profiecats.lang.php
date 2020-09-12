@@ -4,9 +4,9 @@
  *
  *	OUGC Profile Fields Categories plugin (/inc/languages/english/admin/ougc_profiecats.lang.php)
  *	Author: Omar Gonzalez
- *	Copyright: © 2014 Omar Gonzalez
+ *	Copyright: Â© 2014 Omar Gonzalez
  *
- *	Website: http://omarg.me
+ *	Website: https://omargc.me
  *
  *	Allow administrators to create custom profile fields categories.
  *
@@ -59,9 +59,3 @@ $l['ougc_profiecats_admin_success_edit'] = 'The category was successfully edited
 $l['ougc_profiecats_admin_success_delete'] = 'The category was successfully deleted.';
 $l['ougc_profiecats_admin_category'] = 'Category';
 $l['ougc_profiecats_admin_category_desc'] = 'Select the category this profile field belongs to.';
-
-// Front end
-$l['ougc_profiecats_additional_information'] = 'Additional Information: {1}';
-$l['ougc_profiecats_users_additional_info'] = 'Additional Info About {1}: {2}';
-$l['ougc_profiecats_postbit'] = '{1} Information';
-$l['ougc_profiecats_newthread_error'] = 'To be able to create threads in this forum you need to fill your <b>{1}</b> field under the <b>{2}</b> category in your profile control panel.<br /><br />Please fill this field before proceeding <a href="{3}/usercp.php?action=profile">here</a>.';
