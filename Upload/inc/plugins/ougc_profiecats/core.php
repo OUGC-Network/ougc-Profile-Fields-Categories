@@ -98,7 +98,7 @@ function addHooks(string $namespace)
 // Log admin action
 function log_action()
 {
-	global profiecats;
+	global $profiecats;
 
 	$data = array();
 
