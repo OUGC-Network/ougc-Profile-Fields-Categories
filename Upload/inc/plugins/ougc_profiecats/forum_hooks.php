@@ -170,19 +170,19 @@ function postbit(&$post)
 	}
 }
 
-function postbit_prev()
+function postbit_prev(&$post)
 {
-	postbit();
+	postbit($post);
 }
 
-function postbit_pm()
+function postbit_pm(&$post)
 {
-	postbit();
+	postbit($post);
 }
 
-function postbit_announcement()
+function postbit_announcement(&$post)
 {
-	postbit();
+	postbit($post);
 }
 
 // New thread
