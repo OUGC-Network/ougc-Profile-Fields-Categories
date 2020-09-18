@@ -440,9 +440,11 @@ function usercp_profile_end()
 
 		$profiecats->output[$category['cid']] = '';
 
-		$lang->profile_required = $lang->sprintf($lang->ougc_profiecats_profile_required, htmlspecialchars_uni($category['name']));
+		$category['name'] = htmlspecialchars_uni($category['name']);
 
-		$lang->additional_information = $lang->sprintf($lang->ougc_profiecats_profile_required, htmlspecialchars_uni($category['name']));
+		$lang->profile_required = $lang->sprintf($lang->ougc_profiecats_profile_required, $category['name']);
+
+		$lang->additional_information = $lang->sprintf($lang->ougc_profiecats_additional_information, $category['name']);
 
 		$requiredfields = $customfields = '';
 
