@@ -57,5 +57,7 @@ $l['ougc_profiecats_admin_error_invalid_category'] = 'The selected category is i
 $l['ougc_profiecats_admin_success_add'] = 'The category was successfully added.';
 $l['ougc_profiecats_admin_success_edit'] = 'The category was successfully edited.';
 $l['ougc_profiecats_admin_success_delete'] = 'The category was successfully deleted.';
+$l['ougc_profiecats_admin_success_rebuild'] = 'The templates were successfully rebuilt.';
 $l['ougc_profiecats_admin_category'] = 'Category';
 $l['ougc_profiecats_admin_category_desc'] = 'Select the category this profile field belongs to.';
+$l['ougc_profiecats_admin_rebuild'] = 'Rebuild Templates';

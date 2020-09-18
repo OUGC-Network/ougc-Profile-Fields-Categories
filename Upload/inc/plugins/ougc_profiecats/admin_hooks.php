@@ -162,6 +162,50 @@ function admin_config_profile_fields_begin()
 		$form->end();
 		$page->output_footer();
 	}
+	elseif($mybb->get_input('do') == 'rebuildcatmpl')
+	{
+		if(!($category = \OUGCProfiecats\Core\get_category($mybb->get_input('cid', \MyBB::INPUT_INT))))
+		{
+			flash_message($lang->ougc_profiecats_admin_error_invalid_category, 'error');
+			admin_redirect($sub_tabs['ougc_profiecats_admin_tab']['link']);
+		}
+
+		if($mybb->request_method == 'post')
+		{
+			if(!verify_post_check($mybb->input['my_post_key'], true))
+			{
+				flash_message($lang->invalid_post_verify_key2, 'error');
+				admin_redirect($sub_tabs['ougc_profiecats_admin_tab']['link']);
+			}
+
+			!isset($mybb->input['no']) or admin_redirect($sub_tabs['ougc_profiecats_admin_tab']['link']);
+
+
+			$templates = [
+				'usercp_profile' => '{$customfields}',
+				'modcp_editprofile' => '{$customfields}',
+				'member_profile' => '{$profilefields}',
+				'postbit' => '{$post[\'user_details\']}',
+				'postbit_classic' => '{$post[\'user_details\']}',
+			];
+	
+			$variable = '{$GLOBALS[\'profiecats\']->output[\''.$category['cid'].'\']}';
+
+			require_once MYBB_ROOT.'inc/adminfunctions_templates.php';
+
+			foreach($templates as $name => $search)
+			{
+				find_replace_templatesets($name, '#'.preg_quote($variable).'#i', '', 0);
+
+				find_replace_templatesets($name, '#'.preg_quote($search).'#', $search.$variable);			
+			}
+
+			flash_message($lang->ougc_profiecats_admin_success_rebuild, 'success');
+			admin_redirect($sub_tabs['ougc_profiecats_admin_tab']['link']);
+		}
+
+		$page->output_confirm_action($sub_tabs['ougc_profiecats_admin_tab']['link'].'&amp;do=rebuildcatmpl&amp;cid='.$mybb->get_input('cid', \MyBB::INPUT_INT));
+	}
 	elseif($mybb->get_input('do') == 'delete')
 	{
 		if(!($category = \OUGCProfiecats\Core\get_category($mybb->get_input('cid', \MyBB::INPUT_INT))))
@@ -262,6 +306,7 @@ function admin_config_profile_fields_begin()
 
 				$popup = new \PopupMenu("category_{$category['cid']}", $lang->options);
 				$popup->add_item($lang->edit, $edit_link);
+				$popup->add_item($lang->ougc_profiecats_admin_rebuild, 'index.php?module=config-profile_fields&amp;action=categories&amp;do=rebuildcatmpl&amp;cid='.$category['cid']);
 				$popup->add_item($lang->view, 'index.php?module=config-profile_fields&amp;view_cat='.$category['cid']);
 				$popup->add_item($lang->delete, 'index.php?module=config-profile_fields&amp;action=categories&amp;do=delete&amp;cid='.$category['cid']);
 				$table->construct_cell($popup->fetch(), array('class' => 'align_center'));
