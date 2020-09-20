@@ -61,3 +61,4 @@ $l['ougc_profiecats_admin_success_rebuild'] = 'The templates were successfully r
 $l['ougc_profiecats_admin_category'] = 'Category';
 $l['ougc_profiecats_admin_category_desc'] = 'Select the category this profile field belongs to.';
 $l['ougc_profiecats_admin_rebuild'] = 'Rebuild Templates';
+$l['ougc_profiecats_pluginlibrary'] = 'This plugin requires <a href="{1}">PluginLibrary</a> version {2} or later to be uploaded to your forum.';
