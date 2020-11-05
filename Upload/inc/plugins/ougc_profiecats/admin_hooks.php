@@ -327,7 +327,7 @@ function admin_formcontainer_end()
 {
 	global $run_module, $form_container, $lang;
 
-	if($run_module == 'config' && ($form_container->_title == $lang->edit_profile_field || $form_container->_title == $lang->add_new_profile_field))
+	if($run_module == 'config' && !empty($form_container->_title) && ($form_container->_title == $lang->edit_profile_field || $form_container->_title == $lang->add_new_profile_field))
 	{
 		global $form, $mybb, $profile_field;
 		\OUGCProfiecats\Core\load_language();
