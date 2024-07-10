@@ -30,7 +30,7 @@
 // Die if IN_MYBB is not defined, for security reasons.
 defined('IN_MYBB') or die('Direct initialization of this file is disallowed.');
 
-define('OUGC_PROFIECATS_ROOT', MYBB_ROOT . 'inc/plugins/ougc_profiecats');
+define('OUGC_PROFIECATS_ROOT', MYBB_ROOT . 'inc/plugins/ougc/ProfileFieldsCategories');
 
 require_once OUGC_PROFIECATS_ROOT.'/core.php';
 
