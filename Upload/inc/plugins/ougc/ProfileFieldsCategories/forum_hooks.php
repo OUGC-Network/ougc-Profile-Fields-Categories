@@ -31,6 +31,7 @@ namespace OUGCProfiecats\ForumHooks;
 // Break down categorization here
 use postParser;
 
+use function ougc\FileProfileFields\Hooks\Forum\ougc_plugins_customfields_usercp_end80;
 use function OUGCProfiecats\Core\load_language;
 
 function global_start09()
@@ -93,6 +94,8 @@ function postbit(&$post)
 
         $profiecats->output[$category['cid']] = '';
 
+        $profilefields = '';
+
         foreach ($profiecats->cache['profilefields'][$category['cid']] as $field) {
             /*~~~*/
             $fieldfid = "fid{$field['fid']}";
@@ -134,7 +137,7 @@ function postbit(&$post)
                         'filter_badwords' => 1
                     );
 
-                    if ($customfield['type'] == 'textarea') {
+                    if ($type == 'textarea') {
                         $field_parser_options['me_username'] = $post['username'];
                     } else {
                         $field_parser_options['nl2br'] = 0;
@@ -150,10 +153,10 @@ function postbit(&$post)
 
                 $profilefields .= eval($templates->render('postbit_profilefield'));
             }
+        }
 
-            if ($profilefields) {
-                $profiecats->output[$category['cid']] = eval($templates->render('ougcprofiecats_postbit'));
-            }
+        if ($profilefields) {
+            $profiecats->output[$category['cid']] = eval($templates->render('ougcprofiecats_postbit'));
         }
     }
 }
@@ -385,7 +388,11 @@ function member_profile_end()
 // UCP Display
 function usercp_profile_end()
 {
-    global $mybb, $userfields, $parser, $templates, $theme, $lang, $memprofile, $bgcolor, $user, $user_fields, $errors, $xtpf_inp, $profiecats;
+    global $mybb, $plugins, $parser, $templates, $theme, $lang;
+    global $userfields, $memprofile, $bgcolor, $user, $user_fields, $errors, $xtpf_inp, $profiecats;
+    global $maxlength, $code, $ougc_fileprofilefields, $field, $profilefield, $type;
+
+    //global $customfield, , , , $profilefields;
 
     if (!empty($user_fields)) {
         $user = array_merge($user, $user_fields);
@@ -403,7 +410,9 @@ function usercp_profile_end()
 
     // Most of this code belongs to MYBB::usercp.php Lines #516 ~ #708
     foreach ($categories as $category) {
-        if (!is_array($profiecats->cache['profilefields'][$category['cid']])) {
+        if (empty($profiecats->cache['profilefields']) || !isset(
+                $profiecats->cache['profilefields'][$category['cid']]
+            )) {
             return;
         }
 
@@ -548,6 +557,8 @@ function usercp_profile_end()
 
                 eval("\$code = \"" . $templates->get('usercp_profile_profilefields_text') . "\";");
             }
+
+            $plugins->run_hooks('ougc_plugins_customfields_usercp_end');
 
             if ($profilefield['required'] == 1) {
                 eval("\$requiredfields .= \"" . $templates->get('usercp_profile_customfield') . "\";");

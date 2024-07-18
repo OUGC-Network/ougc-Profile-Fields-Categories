@@ -182,7 +182,6 @@ function delete_category($cid)
     $db->delete_query('ougc_profiecats_categories', 'cid=\'' . $profiecats->cid . '\'');
 }
 
-// Get a award from the DB
 function get_category($cid)
 {
     global $db;

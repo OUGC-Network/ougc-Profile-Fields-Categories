@@ -93,7 +93,7 @@ function admin_config_profile_fields_begin()
 
         $url = ($add ? $sub_tabs['ougc_profiecats_admin_tab_add']['link'] : $sub_tabs['ougc_profiecats_admin_tab_edit']['link']);
 
-        $page->add_breadcrumb_item($lang->ougc_awards_acp_nav, $url);
+        $page->add_breadcrumb_item($lang->ougc_profiecats_admin_tab, $url);
 
         if (!$add) {
             if (!($category = get_category($mybb->get_input('cid', MyBB::INPUT_INT)))) {
@@ -354,11 +354,11 @@ function admin_config_profile_fields_begin()
                     )
                 );
                 $table->construct_cell(
-                    '<img src="styles/default/images/icons/bullet_o' . (!$category['active'] ? 'ff' : 'n') . '.png" alt="" title="' . (!$category['active'] ? $lang->ougc_awards_form_hidden : $lang->ougc_awards_form_visible) . '" />',
+                    '<img src="styles/default/images/icons/bullet_o' . (!$category['active'] ? 'ff' : 'n') . '.png" alt="" title="" />',
                     array('class' => 'align_center')
                 );
                 $table->construct_cell(
-                    '<img src="styles/default/images/icons/bullet_o' . (!$category['required'] ? 'ff' : 'n') . '.png" alt="" title="' . (!$category['required'] ? $lang->ougc_awards_form_hidden : $lang->ougc_awards_form_visible) . '" />',
+                    '<img src="styles/default/images/icons/bullet_o' . (!$category['required'] ? 'ff' : 'n') . '.png" alt="" title="" />',
                     array('class' => 'align_center')
                 );
 
@@ -408,8 +408,9 @@ function admin_formcontainer_end()
 {
     global $run_module, $form_container, $lang;
 
-    if ($run_module == 'config' && !empty($form_container->_title) && ($form_container->_title == $lang->edit_profile_field || $form_container->_title == $lang->add_new_profile_field)) {
+    if ($run_module == 'config' && !empty($form_container->_title) && (!empty($lang->edit_profile_field) && $form_container->_title == $lang->edit_profile_field || !empty($lang->add_new_profile_field) && $form_container->_title == $lang->add_new_profile_field)) {
         global $form, $mybb, $profile_field;
+        
         load_language();
 
         if (isset($profile_field['cid']) && $mybb->request_method != 'post') {
