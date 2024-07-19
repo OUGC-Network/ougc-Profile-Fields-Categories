@@ -51,11 +51,11 @@ function admin_config_profile_fields_begin()
     global $sub_tabs, $lang;
     load_language();
 
-    $sub_tabs['ougc_profiecats_admin_tab'] = array(
+    $sub_tabs['ougc_profiecats_admin_tab'] = [
         'title' => $lang->ougc_profiecats_admin_tab,
         'link' => 'index.php?module=config-profile_fields&amp;action=categories',
         'description' => $lang->ougc_profiecats_admin_tab_desc
-    );
+    ];
 
     global $mybb, $plugins, $page, $db, $db, $db, $db, $db, $db;
 
@@ -63,28 +63,28 @@ function admin_config_profile_fields_begin()
         return;
     }
 
-    $sub_tabs['ougc_profiecats_admin_tab_add'] = array(
+    $sub_tabs['ougc_profiecats_admin_tab_add'] = [
         'title' => $lang->ougc_profiecats_admin_tab_add,
         'link' => 'index.php?module=config-profile_fields&amp;action=categories&amp;do=add',
         'description' => $lang->ougc_profiecats_admin_tab_add_desc
-    );
+    ];
 
     if ($mybb->get_input('do') == 'edit') {
-        $sub_tabs['ougc_profiecats_admin_tab_edit'] = array(
+        $sub_tabs['ougc_profiecats_admin_tab_edit'] = [
             'title' => $lang->ougc_profiecats_admin_tab_edit,
             'link' => 'index.php?module=config-profile_fields&amp;action=categories&amp;do=edit&amp;cid=' . $mybb->get_input(
                     'cid',
                     MyBB::INPUT_INT
                 ),
             'description' => $lang->ougc_profiecats_admin_tab_edit_desc
-        );
+        ];
     }
 
-    $sub_tabs['custom_profile_fields'] = array(
+    $sub_tabs['custom_profile_fields'] = [
         'title' => $lang->custom_profile_fields,
         'link' => 'index.php?module=config-profile_fields',
         'description' => $lang->custom_profile_fields_desc
-    );
+    ];
 
     $plugins->run_hooks('admin_config_profile_fields_categories_start');
 
@@ -104,8 +104,8 @@ function admin_config_profile_fields_begin()
             $page->add_breadcrumb_item(htmlspecialchars_uni($category['name']));
         }
 
-        $mergeinput = array();
-        foreach (array('name', 'forums', 'active', 'required', 'disporder') as $key) {
+        $mergeinput = [];
+        foreach (['name', 'forums', 'active', 'required', 'disporder'] as $key) {
             $mergeinput[$key] = isset($mybb->input[$key]) ? $mybb->input[$key] : ($add ? '' : $category[$key]);
             if ($key == 'forums') {
                 clean_ints($mergeinput[$key]);
@@ -117,7 +117,7 @@ function admin_config_profile_fields_begin()
         $page->output_nav_tabs($sub_tabs, $add ? 'ougc_profiecats_admin_tab_add' : 'ougc_profiecats_admin_tab_edit');
 
         if ($mybb->request_method == 'post') {
-            $errors = array();
+            $errors = [];
             if (!$mybb->get_input('name') || isset($mybb->input{100})) {
                 $errors[] = $lang->ougc_profiecats_admin_error_invalid_name;
             }
@@ -126,21 +126,21 @@ function admin_config_profile_fields_begin()
                 $lang_val = $add ? 'ougc_profiecats_admin_success_add' : 'ougc_profiecats_admin_success_edit';
 
                 if ($add) {
-                    insert_category(array(
+                    insert_category([
                         'name' => $mybb->get_input('name'),
                         'forums' => $mybb->get_input('forums', MyBB::INPUT_ARRAY),
                         'active' => $mybb->get_input('active', MyBB::INPUT_INT),
                         'required' => $mybb->get_input('required', MyBB::INPUT_INT),
                         'disporder' => $mybb->get_input('disporder', MyBB::INPUT_INT)
-                    ), $mybb->get_input('cid', MyBB::INPUT_INT));
+                    ], $mybb->get_input('cid', MyBB::INPUT_INT));
                 } else {
-                    update_category(array(
+                    update_category([
                         'name' => $mybb->get_input('name'),
                         'forums' => $mybb->get_input('forums', MyBB::INPUT_ARRAY),
                         'active' => $mybb->get_input('active', MyBB::INPUT_INT),
                         'required' => $mybb->get_input('required', MyBB::INPUT_INT),
                         'disporder' => $mybb->get_input('disporder', MyBB::INPUT_INT)
-                    ), $mybb->get_input('cid', MyBB::INPUT_INT));
+                    ], $mybb->get_input('cid', MyBB::INPUT_INT));
                 }
 
                 update_cache();
@@ -186,16 +186,16 @@ function admin_config_profile_fields_begin()
             $form->generate_text_box(
                 'disporder',
                 $mybb->get_input('disporder', MyBB::INPUT_INT),
-                array('style' => 'text-align: center; width: 30px;" maxlength="5')
+                ['style' => 'text-align: center; width: 30px;" maxlength="5']
             )
         );
 
         $form_container->end();
         $form->output_submit_wrapper(
-            array(
+            [
                 $form->generate_submit_button($lang->ougc_profiecats_admin_summit),
                 $form->generate_reset_button($lang->reset)
-            )
+            ]
         );
         $form->end();
         $page->output_footer();
@@ -280,18 +280,18 @@ function admin_config_profile_fields_begin()
         $page->output_nav_tabs($sub_tabs, 'ougc_profiecats_admin_tab');
 
         $table = new Table();
-        $table->construct_header($lang->ougc_profiecats_admin_name, array('width' => '55%'));
-        $table->construct_header($lang->ougc_profiecats_admin_active, array('width' => '10%', 'class' => 'align_center')
+        $table->construct_header($lang->ougc_profiecats_admin_name, ['width' => '55%']);
+        $table->construct_header($lang->ougc_profiecats_admin_active, ['width' => '10%', 'class' => 'align_center']
         );
         $table->construct_header(
             $lang->ougc_profiecats_admin_required,
-            array('width' => '10%', 'class' => 'align_center')
+            ['width' => '10%', 'class' => 'align_center']
         );
         $table->construct_header(
             $lang->ougc_profiecats_admin_disporder,
-            array('width' => '15%', 'class' => 'align_center')
+            ['width' => '15%', 'class' => 'align_center']
         );
-        $table->construct_header($lang->options, array('width' => '10%', 'class' => 'align_center'));
+        $table->construct_header($lang->options, ['width' => '10%', 'class' => 'align_center']);
 
         isset($mybb->input['limit']) or $mybb->input['limit'] = 20;
 
@@ -309,20 +309,20 @@ function admin_config_profile_fields_begin()
             'ougc_profiecats_categories',
             '*',
             '',
-            array('limit_start' => $start, 'limit' => $limit, 'order_by' => 'disporder')
+            ['limit_start' => $start, 'limit' => $limit, 'order_by' => 'disporder']
         );
 
         if (!$db->num_rows($query)) {
             $table->construct_cell(
                 '<div align="center">' . $lang->ougc_profiecats_admin_empty . '</div>',
-                array('colspan' => 6)
+                ['colspan' => 6]
             );
             $table->construct_row();
             $table->output($sub_tabs['ougc_profiecats_admin_tab']['title']);
         } else {
             if ($mybb->request_method == 'post' && $mybb->get_input('do') == 'updatedisporder') {
                 foreach ($mybb->get_input('disporder', MyBB::INPUT_ARRAY) as $cid => $disporder) {
-                    update_category(array('disporder' => $disporder), $cid);
+                    update_category(['disporder' => $disporder], $cid);
                 }
                 update_cache();
                 admin_redirect($sub_tabs['ougc_profiecats_admin_tab']['link']);
@@ -355,20 +355,20 @@ function admin_config_profile_fields_begin()
                 );
                 $table->construct_cell(
                     '<img src="styles/default/images/icons/bullet_o' . (!$category['active'] ? 'ff' : 'n') . '.png" alt="" title="" />',
-                    array('class' => 'align_center')
+                    ['class' => 'align_center']
                 );
                 $table->construct_cell(
                     '<img src="styles/default/images/icons/bullet_o' . (!$category['required'] ? 'ff' : 'n') . '.png" alt="" title="" />',
-                    array('class' => 'align_center')
+                    ['class' => 'align_center']
                 );
 
                 $table->construct_cell(
                     $form->generate_text_box(
                         'disporder[' . $category['cid'] . ']',
                         (int)$category['disporder'],
-                        array('style' => 'text-align: center; width: 30px;')
+                        ['style' => 'text-align: center; width: 30px;']
                     ),
-                    array('class' => 'align_center')
+                    ['class' => 'align_center']
                 );
 
                 $popup = new PopupMenu("category_{$category['cid']}", $lang->options);
@@ -385,17 +385,17 @@ function admin_config_profile_fields_begin()
                     $lang->delete,
                     'index.php?module=config-profile_fields&amp;action=categories&amp;do=delete&amp;cid=' . $category['cid']
                 );
-                $table->construct_cell($popup->fetch(), array('class' => 'align_center'));
+                $table->construct_cell($popup->fetch(), ['class' => 'align_center']);
 
                 $table->construct_row();
             }
             $table->output($sub_tabs['ougc_profiecats_admin_tab']['title']);
 
             $form->output_submit_wrapper(
-                array(
+                [
                     $form->generate_submit_button($lang->ougc_profiecats_admin_summit),
                     $form->generate_reset_button($lang->reset)
-                )
+                ]
             );
             $form->end();
         }
@@ -410,17 +410,17 @@ function admin_formcontainer_end()
 
     if ($run_module == 'config' && !empty($form_container->_title) && (!empty($lang->edit_profile_field) && $form_container->_title == $lang->edit_profile_field || !empty($lang->add_new_profile_field) && $form_container->_title == $lang->add_new_profile_field)) {
         global $form, $mybb, $profile_field;
-        
+
         load_language();
 
         if (isset($profile_field['cid']) && $mybb->request_method != 'post') {
             $mybb->input['category'] = $profile_field['cid'];
         }
 
-        $checked = (!empty($mybb->input['vgroup_1_vgroups']) ? array(
+        $checked = (!empty($mybb->input['vgroup_1_vgroups']) ? [
             'all' => '',
             'select' => ' checked="checked"'
-        ) : array('all' => 'checked="checked"', 'select' => ''));
+        ] : ['all' => 'checked="checked"', 'select' => '']);
 
         $form_container->output_row(
             $lang->ougc_profiecats_admin_category,
@@ -438,7 +438,7 @@ function admin_config_profile_fields_edit_commit()
     if ($plugins->current_hook == 'admin_config_profile_fields_add_commit') {
         $db->update_query(
             'profilefields',
-            array('cid' => $mybb->get_input('category', MyBB::INPUT_INT)),
+            ['cid' => $mybb->get_input('category', MyBB::INPUT_INT)],
             "fid='{$fid}'"
         );
     } else {

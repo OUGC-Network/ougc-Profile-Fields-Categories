@@ -103,7 +103,7 @@ if (!function_exists('control_object')) {
         $checkstr = 'O:' . strlen($classname) . ':"' . $classname . '":';
         $checkstr_len = strlen($checkstr);
         if (substr($objserial, 0, $checkstr_len) == $checkstr) {
-            $vars = array();
+            $vars = [];
             // grab resources/object etc, stripping scope info from keys
             foreach ((array)$obj as $k => $v) {
                 if ($p = strrpos($k, "\0")) {

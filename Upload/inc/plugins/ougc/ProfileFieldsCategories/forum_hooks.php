@@ -127,7 +127,7 @@ function postbit(&$post)
                         );
                     }
                 } else {
-                    $field_parser_options = array(
+                    $field_parser_options = [
                         'allow_html' => $field['allowhtml'],
                         'allow_mycode' => $field['allowmycode'],
                         'allow_smilies' => $field['allowsmilies'],
@@ -135,7 +135,7 @@ function postbit(&$post)
                         'allow_videocode' => $field['allowvideocode'],
                         #"nofollow_on" => 1,
                         'filter_badwords' => 1
-                    );
+                    ];
 
                     if ($type == 'textarea') {
                         $field_parser_options['me_username'] = $post['username'];
@@ -235,13 +235,13 @@ function newthread_start()
             $foruminfo['rulestitle'] = $lang->sprintf($lang->forum_rules, $foruminfo['name']);
         }
 
-        $parser_options = array(
+        $parser_options = [
             'allow_html' => 1,
             'allow_mycode' => 1,
             'allow_smilies' => 1,
             'allow_imgcode' => 1,
             'filter_badwords' => 1
-        );
+        ];
 
         $foruminfo['rules'] = $parser->parse_message($foruminfo['rules'], $parser_options);
 
@@ -345,7 +345,7 @@ function member_profile_end()
                         );
                     }
                 } else {
-                    $parser_options = array(
+                    $parser_options = [
                         'allow_html' => $customfield['allowhtml'],
                         'allow_mycode' => $customfield['allowmycode'],
                         'allow_smilies' => $customfield['allowsmilies'],
@@ -353,7 +353,7 @@ function member_profile_end()
                         'allow_videocode' => $customfield['allowvideocode'],
                         #"nofollow_on" => 1,
                         'filter_badwords' => 1
-                    );
+                    ];
 
                     if ($customfield['type'] == 'textarea') {
                         $parser_options['me_username'] = $memprofile['username'];
@@ -406,7 +406,7 @@ function usercp_profile_end()
 
     load_language();
 
-    is_array($xtpf_inp) or $xtpf_inp = array();
+    is_array($xtpf_inp) or $xtpf_inp = [];
 
     // Most of this code belongs to MYBB::usercp.php Lines #516 ~ #708
     foreach ($categories as $category) {
@@ -447,7 +447,7 @@ function usercp_profile_end()
             if (isset($thing[1])) {
                 $options = $thing[1];
             } else {
-                $options = array();
+                $options = [];
             }
             $field = "fid{$profilefield['fid']}";
             $select = '';
@@ -572,7 +572,7 @@ function usercp_profile_end()
             $options = '';
             $expoptions = '';
             $useropts = '';
-            $seloptions = array();
+            $seloptions = [];
             /*~~~*/
         }
 

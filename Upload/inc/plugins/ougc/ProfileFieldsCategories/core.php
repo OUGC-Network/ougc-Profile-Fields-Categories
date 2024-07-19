@@ -96,7 +96,7 @@ function log_action()
 {
     global $profiecats;
 
-    $data = array();
+    $data = [];
 
     if ($profiecats->cid) {
         $data['cid'] = $profiecats->cid;
@@ -110,9 +110,9 @@ function update_cache()
 {
     global $db, $cache;
 
-    $d = array();
+    $d = [];
 
-    $query = $db->simple_select('ougc_profiecats_categories', '*', '', array('order_by' => 'disporder'));
+    $query = $db->simple_select('ougc_profiecats_categories', '*', '', ['order_by' => 'disporder']);
     while ($category = $db->fetch_array($query)) {
         $d[$category['cid']] = $category;
     }
@@ -145,7 +145,7 @@ function insert_category($data, $cid = null, $update = false)
 {
     global $db, $profiecats;
 
-    $cleandata = array();
+    $cleandata = [];
 
     !isset($data['name']) or $cleandata['name'] = $db->escape_string($data['name']);
     !isset($data['forums']) or $cleandata['forums'] = $db->escape_string(clean_ints($data['forums'], true));
@@ -177,7 +177,7 @@ function delete_category($cid)
 
     $profiecats->cid = (int)$cid;
 
-    $db->update_query('profilefields', array('cid' => 0), 'cid=\'' . $profiecats->cid . '\'');
+    $db->update_query('profilefields', ['cid' => 0], 'cid=\'' . $profiecats->cid . '\'');
 
     $db->delete_query('ougc_profiecats_categories', 'cid=\'' . $profiecats->cid . '\'');
 }
@@ -207,7 +207,7 @@ function generate_category_select($name, $selected)
     }
     $select .= "<option value=\"0\"{$select_add}>{$lang->ougc_profiecats_admin_none}</option>\n";
 
-    $query = $db->simple_select('ougc_profiecats_categories', '*', '', array('order_by' => 'name'));
+    $query = $db->simple_select('ougc_profiecats_categories', '*', '', ['order_by' => 'name']);
     while ($category = $db->fetch_array($query)) {
         $select_add = '';
         if ($selected == $category['cid']) {
