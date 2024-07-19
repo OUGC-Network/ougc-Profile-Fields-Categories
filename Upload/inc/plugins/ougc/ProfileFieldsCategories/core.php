@@ -26,18 +26,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
 
+declare(strict_types=1);
+
 namespace OUGCProfiecats\Core;
 
 use function OUGCProfiecats\Admin\_info;
 
-function load_language()
+function load_language(): bool
 {
     global $lang;
 
     isset($lang->setting_group_ougc_profiecats) || $lang->load('ougc_profiecats');
+
+    return true;
 }
 
-function load_pluginlibrary($check = true)
+function load_pluginlibrary(bool $check = true): bool
 {
     global $PL, $lang;
 
@@ -46,11 +50,11 @@ function load_pluginlibrary($check = true)
     if ($file_exists = file_exists(PLUGINLIBRARY)) {
         global $PL;
 
-        $PL or require_once PLUGINLIBRARY;
+        $PL || require_once PLUGINLIBRARY;
     }
 
     if (!$check) {
-        return;
+        return true;
     }
 
     $_info = _info();
@@ -63,9 +67,11 @@ function load_pluginlibrary($check = true)
 
         admin_redirect('index.php?module=config-plugins');
     }
+
+    return true;
 }
 
-function addHooks(string $namespace)
+function addHooks(string $namespace): bool
 {
     global $plugins;
 
@@ -76,7 +82,7 @@ function addHooks(string $namespace)
         $namespaceWithPrefixLength = strlen($namespaceLowercase) + 1;
 
         if (substr($callable, 0, $namespaceWithPrefixLength) == $namespaceLowercase . '\\') {
-            $hookName = substr_replace($callable, null, 0, $namespaceWithPrefixLength);
+            $hookName = substr_replace($callable, '', 0, $namespaceWithPrefixLength);
 
             $priority = substr($callable, -2);
 
@@ -89,10 +95,12 @@ function addHooks(string $namespace)
             $plugins->add_hook($hookName, $callable, $priority);
         }
     }
+
+    return true;
 }
 
 // Log admin action
-function log_action()
+function log_action(): bool
 {
     global $profiecats;
 
@@ -103,10 +111,12 @@ function log_action()
     }
 
     log_admin_action($data);
+
+    return true;
 }
 
 // Update the cache
-function update_cache()
+function update_cache(): bool
 {
     global $db, $cache;
 
@@ -118,43 +128,37 @@ function update_cache()
     }
 
     $cache->update('ougc_profiecats_categories', $d);
+
+    return true;
 }
 
 // Clean input
-function clean_ints(&$val, $implode = false)
+function clean_ints(array $val): array
 {
-    if (!is_array($val)) {
-        $val = (array)explode(',', (string)$val);
-    }
-
     foreach ($val as $k => &$v) {
         $v = (int)$v;
     }
 
-    $val = array_filter($val);
-
-    if ($implode) {
-        $val = (string)implode(',', $val);
-    }
-
-    return $val;
+    return array_filter($val);
 }
 
 // Insert a new rate to the DB
-function insert_category($data, $cid = null, $update = false)
+function insert_category(array $data, int $cid = 0, bool $update = false): bool
 {
     global $db, $profiecats;
 
     $cleandata = [];
 
-    !isset($data['name']) or $cleandata['name'] = $db->escape_string($data['name']);
-    !isset($data['forums']) or $cleandata['forums'] = $db->escape_string(clean_ints($data['forums'], true));
-    !isset($data['active']) or $cleandata['active'] = (int)$data['active'];
-    !isset($data['required']) or $cleandata['required'] = (int)$data['required'];
-    !isset($data['disporder']) or $cleandata['disporder'] = (int)$data['disporder'];
+    !isset($data['name']) || $cleandata['name'] = $db->escape_string($data['name']);
+    !isset($data['forums']) || $cleandata['forums'] = $db->escape_string(
+        implode(',', clean_ints(is_array($data['forums']) ? $data['forums'] : explode(',', v)))
+    );
+    !isset($data['active']) || $cleandata['active'] = (int)$data['active'];
+    !isset($data['required']) || $cleandata['required'] = (int)$data['required'];
+    !isset($data['disporder']) || $cleandata['disporder'] = (int)$data['disporder'];
 
     if ($update) {
-        $profiecats->cid = (int)$cid;
+        $profiecats->cid = $cid;
 
         $db->update_query('ougc_profiecats_categories', $cleandata, 'cid=\'' . $profiecats->cid . '\'');
     } else {
@@ -165,33 +169,42 @@ function insert_category($data, $cid = null, $update = false)
 }
 
 // Update espesific rate
-function update_category($data, $cid)
+function update_category(array $data, int $cid): bool
 {
     insert_category($data, $cid, true);
+
+    return true;
 }
 
 // Completely delete a category from the DB
-function delete_category($cid)
+function delete_category(int $cid): bool
 {
     global $db, $profiecats;
 
-    $profiecats->cid = (int)$cid;
+    $profiecats->cid = $cid;
 
     $db->update_query('profilefields', ['cid' => 0], 'cid=\'' . $profiecats->cid . '\'');
 
     $db->delete_query('ougc_profiecats_categories', 'cid=\'' . $profiecats->cid . '\'');
+
+    return true;
 }
 
-function get_category($cid)
+function get_category(int $cid): array
 {
     global $db;
 
     $query = $db->simple_select('ougc_profiecats_categories', '*', 'cid=\'' . (int)$cid . '\'');
-    return $db->fetch_array($query);
+
+    if ($db->num_rows($query)) {
+        return $db->fetch_array($query);
+    }
+
+    return [];
 }
 
 // Generate a categories selection box.
-function generate_category_select($name, $selected)
+function generate_category_select(string $name, int $selected): string
 {
     global $db, $lang;
 
@@ -223,7 +236,7 @@ function generate_category_select($name, $selected)
     return $select;
 }
 
-function cache($key, $contents)
+function cache($key, $contents): bool
 {
     static $cache = [
         'original' => [],
@@ -233,4 +246,6 @@ function cache($key, $contents)
     ];
 
     $cache[$key] = $contents;
+
+    return true;
 }

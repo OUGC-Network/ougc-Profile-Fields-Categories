@@ -26,6 +26,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
 
+declare(strict_types=1);
+
 namespace OUGCProfiecats\AdminHooks;
 
 use Form;
@@ -46,7 +48,7 @@ use function OUGCProfiecats\Core\log_action;
 use function OUGCProfiecats\Core\update_cache;
 use function OUGCProfiecats\Core\update_category;
 
-function admin_config_profile_fields_begin()
+function admin_config_profile_fields_begin(): bool
 {
     global $sub_tabs, $lang;
     load_language();
@@ -57,10 +59,10 @@ function admin_config_profile_fields_begin()
         'description' => $lang->ougc_profiecats_admin_tab_desc
     ];
 
-    global $mybb, $plugins, $page, $db, $db, $db, $db, $db, $db;
+    global $mybb, $plugins, $page, $db;
 
     if ($mybb->get_input('action') != 'categories') {
-        return;
+        return false;
     }
 
     $sub_tabs['ougc_profiecats_admin_tab_add'] = [
@@ -106,9 +108,9 @@ function admin_config_profile_fields_begin()
 
         $mergeinput = [];
         foreach (['name', 'forums', 'active', 'required', 'disporder'] as $key) {
-            $mergeinput[$key] = isset($mybb->input[$key]) ? $mybb->input[$key] : ($add ? '' : $category[$key]);
+            $mergeinput[$key] = $mybb->input[$key] ?? ($add ? '' : $category[$key]);
             if ($key == 'forums') {
-                clean_ints($mergeinput[$key]);
+                clean_ints(is_array($mergeinput[$key]) ? $mergeinput[$key] : explode(',', $mergeinput[$key]));
             }
         }
         $mybb->input = array_merge($mybb->input, $mergeinput);
@@ -167,7 +169,7 @@ function admin_config_profile_fields_begin()
             $form->generate_forum_select(
                 'forums[]',
                 $mybb->get_input('forums', MyBB::INPUT_ARRAY),
-                array('multiple' => true)
+                ['multiple' => true, 'size' => 5, 'main_option' => $lang->all_forums]
             )
         );
         $form_container->output_row(
@@ -211,8 +213,7 @@ function admin_config_profile_fields_begin()
                 admin_redirect($sub_tabs['ougc_profiecats_admin_tab']['link']);
             }
 
-            !isset($mybb->input['no']) or admin_redirect($sub_tabs['ougc_profiecats_admin_tab']['link']);
-
+            !isset($mybb->input['no']) || admin_redirect($sub_tabs['ougc_profiecats_admin_tab']['link']);
 
             $templates = [
                 'usercp_profile' => '{$customfields}',
@@ -222,14 +223,14 @@ function admin_config_profile_fields_begin()
                 'postbit_classic' => '{$post[\'user_details\']}',
             ];
 
-            $variable = '{$GLOBALS[\'profiecats\']->output[\'' . $category['cid'] . '\']}';
+            $variable = "{\$GLOBALS['profiecats']->output['{$category['cid']}']}";
 
             require_once MYBB_ROOT . 'inc/adminfunctions_templates.php';
 
             foreach ($templates as $name => $search) {
                 find_replace_templatesets($name, '#' . preg_quote($variable) . '#i', '', 0);
 
-                find_replace_templatesets($name, '#' . preg_quote($search) . '#', $search . $variable);
+                find_replace_templatesets($name, '#' . preg_quote($search) . '#', "{$search}{$variable}");
             }
 
             flash_message($lang->ougc_profiecats_admin_success_rebuild, 'success');
@@ -254,7 +255,7 @@ function admin_config_profile_fields_begin()
                 admin_redirect($sub_tabs['ougc_profiecats_admin_tab']['link']);
             }
 
-            !isset($mybb->input['no']) or admin_redirect($sub_tabs['ougc_profiecats_admin_tab']['link']);
+            !isset($mybb->input['no']) || admin_redirect($sub_tabs['ougc_profiecats_admin_tab']['link']);
 
             delete_category($category['cid']);
 
@@ -293,7 +294,7 @@ function admin_config_profile_fields_begin()
         );
         $table->construct_header($lang->options, ['width' => '10%', 'class' => 'align_center']);
 
-        isset($mybb->input['limit']) or $mybb->input['limit'] = 20;
+        isset($mybb->input['limit']) || $mybb->input['limit'] = 20;
 
         $limit = (int)$mybb->get_input('limit', MyBB::INPUT_INT);
         $limit = $limit > 100 ? 100 : ($limit < 1 ? 1 : $limit);
@@ -345,7 +346,7 @@ function admin_config_profile_fields_begin()
 
                 $category['name'] = htmlspecialchars_uni($category['name']);
 
-                $category['active'] or $category['name'] = '<i>' . $category['name'] . '</i>';
+                $category['active'] || $category['name'] = '<i>' . $category['name'] . '</i>';
 
                 $table->construct_cell(
                     '<a href="' . $edit_link . '">' . $category['name'] . '</a>' . $lang->sprintf(
@@ -401,10 +402,12 @@ function admin_config_profile_fields_begin()
         }
         $page->output_footer();
     }
+
+    return true;
 }
 
 // Add/Edit fields
-function admin_formcontainer_end()
+function admin_formcontainer_end(): bool
 {
     global $run_module, $form_container, $lang;
 
@@ -428,10 +431,12 @@ function admin_formcontainer_end()
             generate_category_select('category', $mybb->get_input('category', MyBB::INPUT_INT))
         );
     }
+
+    return true;
 }
 
 // Commit changes
-function admin_config_profile_fields_edit_commit()
+function admin_config_profile_fields_edit_commit(): bool
 {
     global $mybb, $plugins, $updated_profile_field, $db, $fid;
 
@@ -444,24 +449,27 @@ function admin_config_profile_fields_edit_commit()
     } else {
         $updated_profile_field['cid'] = $mybb->get_input('category', MyBB::INPUT_INT);
     }
+
+    return true;
 }
 
-function admin_config_profile_fields_add_commit()
+function admin_config_profile_fields_add_commit(): bool
 {
     admin_config_profile_fields_edit_commit();
+
+    return true;
 }
 
 // Hijack fields listing
-function admin_config_profile_fields_start()
+function admin_config_profile_fields_start(): bool
 {
     global $mybb;
 
     if (!$mybb->get_input('view_cat', MyBB::INPUT_INT)) {
-        return;
+        return false;
     }
 
-    control_object(
-        $GLOBALS['db'],
+    control_db(
         '
 		function query($string, $hide_errors=0, $write_query=0)
 		{
@@ -476,4 +484,6 @@ function admin_config_profile_fields_start()
 		}
 	'
     );
+
+    return true;
 }

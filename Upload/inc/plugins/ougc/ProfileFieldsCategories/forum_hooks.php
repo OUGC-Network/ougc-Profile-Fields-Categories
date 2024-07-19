@@ -26,6 +26,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
 
+declare(strict_types=1);
+
 namespace OUGCProfiecats\ForumHooks;
 
 // Break down categorization here
@@ -34,8 +36,16 @@ use postParser;
 use function ougc\FileProfileFields\Hooks\Forum\ougc_plugins_customfields_usercp_end80;
 use function OUGCProfiecats\Core\load_language;
 
-function global_start09()
+function global_start09(): bool
 {
+    global $templatelist;
+
+    if (!isset($templatelist)) {
+        $templatelist = '';
+    } else {
+        $templatelist .= ',';
+    }
+
     global $cache, $profiecats;
 
     $profiecats->cache['original'] = $profilefields = $cache->read('profilefields');
@@ -46,36 +56,36 @@ function global_start09()
                 unset($profilefields[$key]);
 
                 $profiecats->cache['profilefields'][$field['cid']][$key] = $field;
+
+                $templatelist .= ",member_profile_customfields_field_category{$field['cid']},member_profile_customfields_category{$field['cid']}";
+
+                $templatelist .= ",ougcfileprofilefields_profile_file_category{$field['cid']},ougcfileprofilefields_profile_status_category{$field['cid']},ougcfileprofilefields_profile_status_mod_category{$field['cid']}";
             }
         }
     }
 
     $profiecats->cache['modified'] = $cache->cache['profilefields'] = $profilefields;
 
-    global $templatelist;
-
-    if (!isset($templatelist)) {
-        $templatelist = '';
-    } else {
-        $templatelist .= ',';
-    }
-
     if (THIS_SCRIPT == 'showthread.php') {
-        $templatelist .= 'ougcprofiecats_postbit';
+        $templatelist .= ',ougcprofiecats_postbit';
     }
 
     if (THIS_SCRIPT == 'usercp.php' || THIS_SCRIPT == 'modcp.php') {
-        $templatelist .= 'ougcprofiecats_usercp_profile_requiredfields';
+        $templatelist .= ',ougcprofiecats_usercp_profile_requiredfields';
     }
+
+    return true;
 }
 
-function xmlhttp09()
+function xmlhttp09(): bool
 {
     global_start09();
+
+    return true;
 }
 
 // Post-bit table
-function postbit(&$post)
+function postbit(array &$post): array
 {
     global $mybb, $parser, $templates, $theme, $lang, $profiecats;
 
@@ -85,7 +95,7 @@ function postbit(&$post)
 
     foreach ($categories as $category) {
         if (!is_array($profiecats->cache['profilefields'][$category['cid']])) {
-            return;
+            continue;
         }
 
         $category['name'] = htmlspecialchars_uni($category['name']);
@@ -103,7 +113,7 @@ function postbit(&$post)
                 $post['fieldvalue'] = '';
                 $post['fieldname'] = htmlspecialchars_uni($field['name']);
 
-                $thing = explode("\n", $field['type'], '2');
+                $thing = explode("\n", $field['type'], 2);
                 $type = trim($thing[0]);
                 $useropts = explode("\n", $post[$fieldfid]);
 
@@ -159,30 +169,38 @@ function postbit(&$post)
             $profiecats->output[$category['cid']] = eval($templates->render('ougcprofiecats_postbit'));
         }
     }
+
+    return $post;
 }
 
-function postbit_prev(&$post)
+function postbit_prev(array &$post): array
 {
     postbit($post);
+
+    return $post;
 }
 
-function postbit_pm(&$post)
+function postbit_pm(array &$post): array
 {
     postbit($post);
+
+    return $post;
 }
 
-function postbit_announcement(&$post)
+function postbit_announcement(array &$post): array
 {
     postbit($post);
+
+    return $post;
 }
 
 // New thread
-function newthread_start()
+function newthread_start(): bool
 {
     global $mybb, $fid, $profiecats;
 
     if (!$categories = (array)$mybb->cache->read('ougc_profiecats_categories')) {
-        return;
+        return false;
     }
 
     $error = false;
@@ -214,7 +232,7 @@ function newthread_start()
     }
 
     if (!$error) {
-        return;
+        return false;
     }
 
     global $lang, $forum;
@@ -266,33 +284,43 @@ function newthread_start()
     );
 
     error($lang->ougc_profiecats_newthread_error);
+
+    return true;
 }
 
-function newthread_do_newthread_start()
+function newthread_do_newthread_start(): bool
 {
     newthread_start();
+
+    return true;
 }
 
 // Profile display
-function member_profile_end()
+function member_profile_end(): bool
 {
-    global $mybb, $userfields, $parser, $templates, $theme, $lang, $memprofile, $bgcolor, $profiecats;
+    global $mybb, $plugins, $parser, $templates, $theme, $lang;
+    global $userfields, $memprofile, $bgcolor, $profiecats;
+    global $customfield, $ougcProfileFieldsCategoriesCurrentID, $ougcProfileFieldsCategoriesProfileContents, $field, $customfieldval, $type;
 
     $categories = (array)$mybb->cache->read('ougc_profiecats_categories');
 
-    foreach ($categories as $category) {
-        $profiecats->output[$category['cid']] = '';
+    foreach ($categories as $categoryData) {
+        $categoryID = $ougcProfileFieldsCategoriesCurrentID = (int)$categoryData['cid'];
 
-        if (!is_array($profiecats->cache['profilefields'][$category['cid']])) {
-            return;
+        $profiecats->output[$categoryData['cid']] = '';
+
+        if (!is_array($profiecats->cache['profilefields'][$categoryData['cid']])) {
+            continue;
         }
 
-        $lang->users_additional_info = htmlspecialchars_uni($category['name']);
+        //_dump($categoryData, $profiecats->cache['profilefields'][$categoryData['cid']], $mybb->cache->cache['profilefields']);
+
+        $lang->users_additional_info = htmlspecialchars_uni($categoryData['name']);
 
         $bgcolor = $alttrow = 'trow1';
-        $customfields = $profilefields = '';
+        $customfields = $ougcProfileFieldsCategoriesProfileContents = '';
 
-        foreach ($profiecats->cache['profilefields'][$category['cid']] as $customfield) {
+        foreach ($profiecats->cache['profilefields'][$categoryData['cid']] as $customfield) {
             /*~~~*/
             if ($mybb->usergroup['cancp'] != 1 && $mybb->usergroup['issupermod'] != 1 && $mybb->usergroup['canmodcp'] != 1 && !is_member(
                     $customfield['viewableby']
@@ -310,7 +338,15 @@ function member_profile_end()
                 if ($customfieldval) {
                     $customfield['name'] = htmlspecialchars_uni($customfield['name']);
 
-                    $customfields .= eval($templates->render('member_profile_customfields_field'));
+                    if (isset($templates->cache["member_profile_customfields_field_category{$categoryID}"])) {
+                        $customfields .= eval(
+                        $templates->render(
+                            "member_profile_customfields_field_category{$categoryID}"
+                        )
+                        );
+                    } else {
+                        $customfields .= eval($templates->render('member_profile_customfields_field'));
+                    }
 
                     $bgcolor = alt_trow();
                 }
@@ -318,11 +354,13 @@ function member_profile_end()
                 continue;
             }
 
-            $thing = explode("\n", $customfield['type'], '2');
+            $thing = explode("\n", $customfield['type'], 2);
             $type = trim($thing[0]);
 
             $customfieldval = $customfield_val = '';
             $field = "fid{$customfield['fid']}";
+
+            $plugins->run_hooks('ougc_plugins_customfields_profile_start');
 
             if (isset($userfields[$field])) {
                 $useropts = explode("\n", $userfields[$field]);
@@ -371,22 +409,41 @@ function member_profile_end()
 
             if ($customfieldval) {
                 $customfield['name'] = htmlspecialchars_uni($customfield['name']);
-                eval("\$customfields .= \"" . $templates->get('member_profile_customfields_field') . "\";");
+                if (isset($templates->cache["member_profile_customfields_field_category{$categoryID}"])) {
+                    $customfields .= eval(
+                    $templates->render(
+                        "member_profile_customfields_field_category{$categoryID}"
+                    )
+                    );
+                } else {
+                    $customfields .= eval($templates->render('member_profile_customfields_field'));
+                }
+
                 $bgcolor = alt_trow();
             }
             /*~~~*/
         }
 
         if ($customfields) {
-            $profilefields = eval($templates->render('member_profile_customfields'));
+            if (isset($templates->cache["member_profile_customfields_category{$categoryID}"])) {
+                $ougcProfileFieldsCategoriesProfileContents = eval(
+                $templates->render(
+                    "member_profile_customfields_category{$categoryID}"
+                )
+                );
+            } else {
+                $ougcProfileFieldsCategoriesProfileContents = eval($templates->render('member_profile_customfields'));
+            }
         }
 
-        $profiecats->output[$category['cid']] = $profilefields;
+        $profiecats->output[$categoryData['cid']] = $ougcProfileFieldsCategoriesProfileContents;
     }
+
+    return true;
 }
 
 // UCP Display
-function usercp_profile_end()
+function usercp_profile_end(): bool
 {
     global $mybb, $plugins, $parser, $templates, $theme, $lang;
     global $userfields, $memprofile, $bgcolor, $user, $user_fields, $errors, $xtpf_inp, $profiecats;
@@ -406,14 +463,14 @@ function usercp_profile_end()
 
     load_language();
 
-    is_array($xtpf_inp) or $xtpf_inp = [];
+    is_array($xtpf_inp) || $xtpf_inp = [];
 
     // Most of this code belongs to MYBB::usercp.php Lines #516 ~ #708
     foreach ($categories as $category) {
         if (empty($profiecats->cache['profilefields']) || !isset(
                 $profiecats->cache['profilefields'][$category['cid']]
             )) {
-            return;
+            continue;
         }
 
         $profiecats->output[$category['cid']] = '';
@@ -442,7 +499,7 @@ function usercp_profile_end()
             $profilefield['type'] = htmlspecialchars_uni($profilefield['type']);
             $profilefield['name'] = htmlspecialchars_uni($profilefield['name']);
             $profilefield['description'] = htmlspecialchars_uni($profilefield['description']);
-            $thing = explode("\n", $profilefield['type'], '2');
+            $thing = explode("\n", $profilefield['type'], 2);
             $type = $thing[0];
             if (isset($thing[1])) {
                 $options = $thing[1];
@@ -589,38 +646,79 @@ function usercp_profile_end()
         }
     }
 
-    !isset($profiecats->backup['lang_profile_required']) or $lang->additional_information = $profiecats->backup['lang_profile_required'];
+    !isset($profiecats->backup['lang_profile_required']) || $lang->additional_information = $profiecats->backup['lang_profile_required'];
 
-    !isset($profiecats->backup['lang_additional_information']) or $lang->additional_information = $profiecats->backup['lang_additional_information'];
+    !isset($profiecats->backup['lang_additional_information']) || $lang->additional_information = $profiecats->backup['lang_additional_information'];
+
+    return true;
 }
 
-function modcp_editprofile_end()
+function modcp_editprofile_end(): bool
 {
     usercp_profile_end();
+
+    return true;
 }
 
 // Revert cache for validation
-function usercp_do_profile_start()
+function usercp_do_profile_start(): bool
 {
     global $cache, $plugins, $profiecats;
 
     $cache->cache['profilefields'] = $profiecats->cache['original'];
+
+    return true;
 }
 
-function modcp_do_editprofile_start()
+function modcp_do_editprofile_start(): bool
 {
     usercp_do_profile_start();
+
+    return true;
 }
 
 // Hijack it back after validation
-function usercp_profile_start()
+function usercp_profile_start(): bool
 {
     global $cache, $profiecats;
 
     $cache->cache['profilefields'] = $profiecats->cache['modified'];
+
+    return true;
 }
 
-function modcp_editprofile_start()
+function modcp_editprofile_start(): bool
 {
     usercp_profile_start();
+
+    return true;
+}
+
+function memberlist_user(): bool
+{
+    return false;
+    global $user;
+
+    if (!function_exists('ougc_fileprofilefields_info')) {
+        return false;
+    }
+
+    global $db;
+    global $userfields;
+
+    $userID = (int)$user['uid'];
+
+    $query = $db->simple_select('userfields', '*', "ufid = '{$userID}'");
+
+    $userfields = $db->fetch_array($query);
+
+    ougc_plugins_customfields_usercp_end80('profile');
+
+    global $customfieldval;
+
+    $preview = &$customfieldval;
+
+    $profilefield = &$customfield;
+
+    return true;
 }

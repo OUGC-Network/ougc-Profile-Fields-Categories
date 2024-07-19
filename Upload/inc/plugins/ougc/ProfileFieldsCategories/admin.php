@@ -26,6 +26,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
 
+declare(strict_types=1);
+
 namespace OUGCProfiecats\Admin;
 
 use DirectoryIterator;
@@ -33,7 +35,7 @@ use DirectoryIterator;
 use function OUGCProfiecats\Core\load_language;
 use function OUGCProfiecats\Core\load_pluginlibrary;
 
-function _info()
+function _info(): array
 {
     global $lang;
 
@@ -56,7 +58,7 @@ function _info()
     ];
 }
 
-function _activate()
+function _activate(): bool
 {
     global $PL, $lang, $cache, $db;
 
@@ -104,25 +106,34 @@ function _activate()
 
     /*~*~* RUN UPDATES START *~*~*/
 
+    if ($plugins['profiecats'] <= 1800) {
+        $db->update_query('ougc_profiecats_categories', ['forums' => -1], "forums=''");
+    }
+
     /*~*~* RUN UPDATES END *~*~*/
 
     $plugins['profiecats'] = $_info['versioncode'];
 
     $cache->update('ougc_plugins', $plugins);
+
+    return true;
 }
 
-function _deactivate()
+function _deactivate(): bool
 {
+    return true;
 }
 
-function _install()
+function _install(): bool
 {
     _db_verify_tables();
 
     _db_verify_columns();
+
+    return true;
 }
 
-function _is_installed()
+function _is_installed(): bool
 {
     global $db;
 
@@ -135,7 +146,7 @@ function _is_installed()
     return $installed;
 }
 
-function _uninstall()
+function _uninstall(): bool
 {
     global $db, $PL, $cache;
 
@@ -166,30 +177,28 @@ function _uninstall()
     } else {
         $cache->delete('ougc_plugins');
     }
+
+    return true;
 }
 
 // List of tables
-function _db_tables()
+function _db_tables(): array
 {
-    global $db;
-
-    $collation = $db->build_create_table_collation();
-
     return [
         'ougc_profiecats_categories' => [
             'cid' => 'int UNSIGNED NOT NULL AUTO_INCREMENT',
             'name' => "varchar(100) NOT NULL DEFAULT ''",
-            'forums' => "varchar(100) NOT NULL DEFAULT ''",
-            'disporder' => "smallint NOT NULL DEFAULT '0'",
             'active' => "tinyint(1) NOT NULL DEFAULT '1'",
+            'forums' => "varchar(100) NOT NULL DEFAULT '-1'",
             'required' => "tinyint(1) NOT NULL DEFAULT '0'",
+            'disporder' => "smallint NOT NULL DEFAULT '0'",
             'primary_key' => 'cid'
         ],
     ];
 }
 
 // List of columns
-function _db_columns()
+function _db_columns(): array
 {
     return [
         'profilefields' => [
@@ -199,7 +208,7 @@ function _db_columns()
 }
 
 // Verify DB tables
-function _db_verify_tables()
+function _db_verify_tables(): bool
 {
     global $db;
 
@@ -234,10 +243,12 @@ function _db_verify_tables()
             $db->write_query($query);
         }
     }
+
+    return true;
 }
 
 // Verify DB columns
-function _db_verify_columns()
+function _db_verify_columns(): bool
 {
     global $db;
 
@@ -250,4 +261,6 @@ function _db_verify_columns()
             }
         }
     }
+
+    return true;
 }
