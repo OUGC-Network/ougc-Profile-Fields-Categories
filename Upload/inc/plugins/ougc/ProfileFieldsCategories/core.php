@@ -312,6 +312,23 @@ function getCachedProfileFieldsByCategory(int $categoryID): array
     return [];
 }
 
+function customTemplateIsSet(string $templateName): bool
+{
+    global $templates;
+
+    if (DEBUG) {
+        $filePath = ROOT . "/templates/{$templateName}.html";
+
+        if (file_exists($filePath)) {
+            $templateContents = file_get_contents($filePath);
+
+            $templates->cache["ougcprofiecats{$templateName}"] = $templateContents;
+        }
+    }
+
+    return isset($templates->cache["ougcprofiecats{$templateName}"]);
+}
+
 function buildFieldsCategories(array &$userData, $templatePrefix = 'memberList'): bool
 {
     global $mybb, $plugins, $parser, $lang, $profiecats;
@@ -352,6 +369,10 @@ function buildFieldsCategories(array &$userData, $templatePrefix = 'memberList')
         $profileFieldsItems = '';
 
         foreach ($categoryProfileFields as $profileFieldData) {
+            if (!is_member($profileFieldData['viewableby'])) {
+                continue;
+            }
+
             $fieldID = (int)$profileFieldData['fid'];
 
             $fieldIdentifier = "fid{$fieldID}";
@@ -379,12 +400,28 @@ function buildFieldsCategories(array &$userData, $templatePrefix = 'memberList')
 
                 foreach ($userFieldOptions as $userFieldOption) {
                     if (!empty($userFieldOption)) {
-                        $userFieldValueOption .= eval(getTemplate("{$templatePrefix}ProfileFieldMultiSelectValue"));
+                        if (customTemplateIsSet("{$templatePrefix}ProfileFieldMultiSelectValueCategory{$categoryID}")) {
+                            $userFieldValueOption .= eval(
+                            getTemplate(
+                                "{$templatePrefix}ProfileFieldMultiSelectValueCategory{$categoryID}"
+                            )
+                            );
+                        } else {
+                            $userFieldValueOption .= eval(getTemplate("{$templatePrefix}ProfileFieldMultiSelectValue"));
+                        }
                     }
                 }
 
                 if (!empty($userFieldValueOption)) {
-                    $userFieldValue .= eval(getTemplate("{$templatePrefix}ProfileFieldMultiSelect"));
+                    if (customTemplateIsSet("{$templatePrefix}ProfileFieldMultiSelectCategory{$categoryID}")) {
+                        $userFieldValue .= eval(
+                        getTemplate(
+                            "{$templatePrefix}ProfileFieldMultiSelectCategory{$categoryID}"
+                        )
+                        );
+                    } else {
+                        $userFieldValue .= eval(getTemplate("{$templatePrefix}ProfileFieldMultiSelect"));
+                    }
                 }
             } else {
                 $parserOptions = [
@@ -413,11 +450,19 @@ function buildFieldsCategories(array &$userData, $templatePrefix = 'memberList')
 
             $plugins->run_hooks('ougc_profile_fields_categories_build_fields_categories_end', $hookArguments);
 
-            $profileFieldsItems .= eval(getTemplate("{$templatePrefix}ProfileField"));
+            if (customTemplateIsSet("{$templatePrefix}ProfileFieldCategory{$categoryID}")) {
+                $profileFieldsItems .= eval(getTemplate("{$templatePrefix}ProfileFieldCategory{$categoryID}"));
+            } else {
+                $profileFieldsItems .= eval(getTemplate("{$templatePrefix}ProfileField"));
+            }
         }
 
         if ($profileFieldsItems) {
-            $profiecats->output[$categoryID] = eval(getTemplate($templatePrefix));
+            if (customTemplateIsSet("{$templatePrefix}Category{$categoryID}")) {
+                $profiecats->output[$categoryID] .= eval(getTemplate("{$templatePrefix}Category{$categoryID}"));
+            } else {
+                $profiecats->output[$categoryID] .= eval(getTemplate($templatePrefix));
+            }
         }
     }
 
