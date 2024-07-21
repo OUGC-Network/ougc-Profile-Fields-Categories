@@ -28,7 +28,6 @@
 
 declare(strict_types=1);
 
-// Die if IN_MYBB is not defined, for security reasons.
 use function OUGCProfiecats\Admin\_activate;
 use function OUGCProfiecats\Admin\_deactivate;
 use function OUGCProfiecats\Admin\_info;
@@ -37,23 +36,32 @@ use function OUGCProfiecats\Admin\_is_installed;
 use function OUGCProfiecats\Admin\_uninstall;
 use function OUGCProfiecats\Core\addHooks;
 
+use const OUGCProfiecats\ROOT;
+
 defined('IN_MYBB') || die('Direct initialization of this file is disallowed.');
 
-define('OUGC_PROFIECATS_ROOT', MYBB_ROOT . 'inc/plugins/ougc/ProfileFieldsCategories');
+// You can uncomment the lines below to avoid storing some settings in the DB
+define('OUGCProfiecats\Core\SETTINGS', [
+    //'key' => '',
+]);
 
-require_once OUGC_PROFIECATS_ROOT . '/core.php';
+define('OUGCProfiecats\Core\DEBUG', true);
+
+define('OUGCProfiecats\ROOT', constant('MYBB_ROOT') . 'inc/plugins/ougc/ProfileFieldsCategories');
+
+require_once ROOT . '/core.php';
 
 // PLUGINLIBRARY
 defined('PLUGINLIBRARY') || define('PLUGINLIBRARY', MYBB_ROOT . 'inc/plugins/pluginlibrary.php');
 
 // Add our hooks
 if (defined('IN_ADMINCP')) {
-    require_once OUGC_PROFIECATS_ROOT . '/admin.php';
-    require_once OUGC_PROFIECATS_ROOT . '/admin_hooks.php';
+    require_once ROOT . '/admin.php';
+    require_once ROOT . '/admin_hooks.php';
 
     addHooks('OUGCProfiecats\AdminHooks');
 } else {
-    require_once OUGC_PROFIECATS_ROOT . '/forum_hooks.php';
+    require_once ROOT . '/forum_hooks.php';
 
     addHooks('OUGCProfiecats\ForumHooks');
 }

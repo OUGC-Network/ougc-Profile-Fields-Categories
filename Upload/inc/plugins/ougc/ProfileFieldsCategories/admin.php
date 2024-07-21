@@ -35,6 +35,8 @@ use DirectoryIterator;
 use function OUGCProfiecats\Core\load_language;
 use function OUGCProfiecats\Core\load_pluginlibrary;
 
+use const OUGCProfiecats\ROOT;
+
 function _info(): array
 {
     global $lang;
@@ -65,7 +67,7 @@ function _activate(): bool
     load_pluginlibrary();
 
     // Add templates
-    $templatesDirIterator = new DirectoryIterator(OUGC_PROFIECATS_ROOT . '/templates');
+    $templatesDirIterator = new DirectoryIterator(ROOT . '/templates');
 
     $templates = [];
 

@@ -30,7 +30,11 @@ declare(strict_types=1);
 
 namespace OUGCProfiecats\Core;
 
+use postParser;
+
 use function OUGCProfiecats\Admin\_info;
+
+use const OUGCProfiecats\ROOT;
 
 function load_language(): bool
 {
@@ -97,6 +101,34 @@ function addHooks(string $namespace): bool
     }
 
     return true;
+}
+
+function getTemplateName(string $templateName = ''): string
+{
+    $templatePrefix = '';
+
+    if ($templateName) {
+        $templatePrefix = '_';
+    }
+
+    return "ougcprofiecats{$templatePrefix}{$templateName}";
+}
+
+function getTemplate(string $templateName = '', bool $enableHTMLComments = true): string
+{
+    global $templates;
+
+    if (DEBUG) {
+        $filePath = ROOT . "/templates/{$templateName}.html";
+
+        $templateContents = file_get_contents($filePath);
+
+        $templates->cache[getTemplateName($templateName)] = $templateContents;
+    } elseif (my_strpos($templateName, '/') !== false) {
+        $templateName = substr($templateName, strpos($templateName, '/') + 1);
+    }
+
+    return $templates->render(getTemplateName($templateName), true, $enableHTMLComments);
 }
 
 // Log admin action
@@ -246,6 +278,148 @@ function cache($key, $contents): bool
     ];
 
     $cache[$key] = $contents;
+
+    return true;
+}
+
+function getCachedProfileFieldsCategories(): array
+{
+    global $mybb;
+
+    $profileFieldsCategories = $mybb->cache->read('ougc_profiecats_categories');
+
+    if (!empty($profileFieldsCategories) &&
+        is_array($profileFieldsCategories)
+    ) {
+        return $profileFieldsCategories;
+    }
+
+    return [];
+}
+
+function getCachedProfileFieldsByCategory(int $categoryID): array
+{
+    global $profiecats;
+
+    if (
+        !empty($profiecats->cache['profilefields']) &&
+        !empty($profiecats->cache['profilefields'][$categoryID]) &&
+        is_array($profiecats->cache['profilefields'][$categoryID])
+    ) {
+        return $profiecats->cache['profilefields'][$categoryID];
+    }
+
+    return [];
+}
+
+function buildFieldsCategories(array &$userData, $templatePrefix = 'memberList'): bool
+{
+    global $mybb, $plugins, $parser, $lang, $profiecats;
+
+    if (!($parser instanceof postParser)) {
+        require_once MYBB_ROOT . 'inc/class_parser.php';
+
+        $parser = new postParser();
+    }
+
+    load_language();
+
+    $profileFieldsCategories = getCachedProfileFieldsCategories();
+
+    $hookArguments = [
+        'profileFieldsCategories' => &$profileFieldsCategories,
+        'userData' => &$userData,
+        'templatePrefix' => &$templatePrefix
+    ];
+
+    foreach ($profileFieldsCategories as $categoryData) {
+        $categoryID = (int)$categoryData['cid'];
+
+        $profiecats->output[$categoryID] = '';
+
+        if (!($categoryProfileFields = getCachedProfileFieldsByCategory($categoryID))) {
+            continue;
+        }
+
+        $hookArguments['categoryData'] = &$categoryData;
+
+        $hookArguments['categoryProfileFields'] = &$categoryProfileFields;
+
+        $categoryName = htmlspecialchars_uni($categoryData['name']);
+
+        $categoryTitleString = $lang->{"ougcProfileFieldsCategories_{$templatePrefix}Title"};
+
+        $profileFieldsItems = '';
+
+        foreach ($categoryProfileFields as $profileFieldData) {
+            $fieldID = (int)$profileFieldData['fid'];
+
+            $fieldIdentifier = "fid{$fieldID}";
+
+            if (empty($userData[$fieldIdentifier])) {
+                continue;
+            }
+
+            $hookArguments['profileFieldData'] = &$profileFieldData;
+
+            $userFieldValue = '';
+
+            $userFieldName = htmlspecialchars_uni($profileFieldData['name']);
+
+            $fieldType = trim(explode("\n", $profileFieldData['type'], 2)[0]);
+
+            $hookArguments['fieldType'] = &$fieldType;
+
+            $userFieldOptions = explode("\n", $userData[$fieldIdentifier]);
+
+            $plugins->run_hooks('ougc_profile_fields_categories_build_fields_categories_start', $hookArguments);
+
+            if (is_array($userFieldOptions) && in_array($fieldType, ['multiselect', 'checkbox'])) {
+                $userFieldValueOption = '';
+
+                foreach ($userFieldOptions as $userFieldOption) {
+                    if (!empty($userFieldOption)) {
+                        $userFieldValueOption .= eval(getTemplate("{$templatePrefix}ProfileFieldMultiSelectValue"));
+                    }
+                }
+
+                if (!empty($userFieldValueOption)) {
+                    $userFieldValue .= eval(getTemplate("{$templatePrefix}ProfileFieldMultiSelect"));
+                }
+            } else {
+                $parserOptions = [
+                    'allow_html' => (bool)$profileFieldData['allowhtml'],
+                    'allow_mycode' => (bool)$profileFieldData['allowmycode'],
+                    'allow_smilies' => (bool)$profileFieldData['allowsmilies'],
+                    'allow_imgcode' => (bool)$profileFieldData['allowimgcode'],
+                    'allow_videocode' => (bool)$profileFieldData['allowvideocode'],
+                    'filter_badwords' => true
+                ];
+
+                if ($fieldType === 'textarea') {
+                    $parserOptions['me_username'] = $userData['username'];
+                } else {
+                    $parserOptions['nl2br'] = 0;
+                }
+
+                if (empty($mybb->user['showimages']) && !empty($mybb->user['uid']) || empty($mybb->settings['guestimages']) && empty($mybb->user['uid'])) {
+                    $parserOptions['allow_imgcode'] = false;
+                }
+
+                $userFieldValue = $parser->parse_message($userData[$fieldIdentifier], $parserOptions);
+            }
+
+            $hookArguments['userFieldValue'] = &$userFieldValue;
+
+            $plugins->run_hooks('ougc_profile_fields_categories_build_fields_categories_end', $hookArguments);
+
+            $profileFieldsItems .= eval(getTemplate("{$templatePrefix}ProfileField"));
+        }
+
+        if ($profileFieldsItems) {
+            $profiecats->output[$categoryID] = eval(getTemplate($templatePrefix));
+        }
+    }
 
     return true;
 }

@@ -34,6 +34,7 @@ namespace OUGCProfiecats\ForumHooks;
 use postParser;
 
 use function ougc\FileProfileFields\Hooks\Forum\ougc_plugins_customfields_usercp_end80;
+use function OUGCProfiecats\Core\buildFieldsCategories;
 use function OUGCProfiecats\Core\load_language;
 
 function global_start09(): bool
@@ -52,14 +53,18 @@ function global_start09(): bool
 
     if ($profilefields) {
         foreach ($profilefields as $key => $field) {
-            if ($field['cid']) {
+            $categoryID = (int)$field['cid'];
+
+            if ($categoryID) {
                 unset($profilefields[$key]);
 
-                $profiecats->cache['profilefields'][$field['cid']][$key] = $field;
+                $profiecats->cache['profilefields'][$categoryID][$key] = $field;
 
-                $templatelist .= ",member_profile_customfields_field_category{$field['cid']},member_profile_customfields_category{$field['cid']}";
+                $templatelist .= ",member_profile_customfields_field_category{$categoryID},member_profile_customfields_category{$categoryID}";
 
-                $templatelist .= ",ougcfileprofilefields_profile_file_category{$field['cid']},ougcfileprofilefields_profile_status_category{$field['cid']},ougcfileprofilefields_profile_status_mod_category{$field['cid']}";
+                $templatelist .= ",ougcfileprofilefields_profile_file_category{$categoryID},ougcfileprofilefields_profile_status_category{$categoryID},ougcfileprofilefields_profile_status_mod_category{$categoryID}";
+
+                $templatelist .= ", ougcfileprofilefields_memberListStatusModeratorCategory{$categoryID}, ougcfileprofilefields_memberListStatusCategory{$categoryID}, ougcfileprofilefields_memberListFileCategory{$categoryID}, ougcfileprofilefields_memberListFileThumbnailCategory{$categoryID}";
             }
         }
     }
@@ -687,38 +692,16 @@ function usercp_profile_start(): bool
     return true;
 }
 
-function modcp_editprofile_start(): bool
+function modcp_editprofile_start20(): bool
 {
     usercp_profile_start();
 
     return true;
 }
 
-function memberlist_user(): bool
+function memberlist_user20(array $userData): array
 {
-    return false;
-    global $user;
+    buildFieldsCategories($userData);
 
-    if (!function_exists('ougc_fileprofilefields_info')) {
-        return false;
-    }
-
-    global $db;
-    global $userfields;
-
-    $userID = (int)$user['uid'];
-
-    $query = $db->simple_select('userfields', '*', "ufid = '{$userID}'");
-
-    $userfields = $db->fetch_array($query);
-
-    ougc_plugins_customfields_usercp_end80('profile');
-
-    global $customfieldval;
-
-    $preview = &$customfieldval;
-
-    $profilefield = &$customfield;
-
-    return true;
+    return $userData;
 }

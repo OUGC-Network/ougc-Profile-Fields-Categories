@@ -34,7 +34,7 @@ $l['setting_group_ougc_profiecats_desc'] = 'Allow administrators to create custo
 $l['ougc_profiecats_admin_tab'] = 'Categories';
 $l['ougc_profiecats_admin_tab_desc'] = 'Manage custom profile fields categories.';
 $l['ougc_profiecats_admin_empty'] = 'There are currently no custom profile fields categories to show.';
-$l['ougc_profiecats_admin_desc'] = "<br /><b>Templates:</b> <i>usercp_profile</i>, <i>modcp_editprofile</i>, <i>member_profile</i>, <i>postbit</i>, <i>postbit_classic</i>
+$l['ougc_profiecats_admin_desc'] = "<br /><b>Templates:</b> <i>usercp_profile</i>, <i>modcp_editprofile</i>, <i>member_profile</i>, <i>postbit</i>, <i>postbit_classic</i>, <i>memberlist_user</i>
 <br /><b>Variables:</b> {\$GLOBALS['profiecats']->output['{1}']}</small>";
 $l['ougc_profiecats_admin_name'] = 'Category Name';
 $l['ougc_profiecats_admin_name_desc'] = 'Enter the name of the custom category.';
