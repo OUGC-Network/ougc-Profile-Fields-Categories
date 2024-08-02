@@ -37,7 +37,7 @@ use function ougc\FileProfileFields\Hooks\Forum\ougc_plugins_customfields_usercp
 use function OUGCProfiecats\Core\buildFieldsCategories;
 use function OUGCProfiecats\Core\load_language;
 
-function global_start09(): bool
+function global_start01(): bool
 {
     global $templatelist;
 
@@ -84,7 +84,7 @@ function global_start09(): bool
 
 function xmlhttp09(): bool
 {
-    global_start09();
+    global_start01();
 
     return true;
 }
@@ -127,19 +127,16 @@ function postbit(array &$post): array
 
                     foreach ($useropts as $val) {
                         if ($val != '') {
-                            eval(
-                                "\$post['fieldvalue_option'] .= \"" . $templates->get(
-                                    'postbit_profilefield_multiselect_value'
-                                ) . "\";"
+                            $post['fieldvalue_option'] .= eval(
+                            $templates->render(
+                                'postbit_profilefield_multiselect_value'
+                            )
                             );
                         }
                     }
+
                     if ($post['fieldvalue_option'] != '') {
-                        eval(
-                            "\$post['fieldvalue'] .= \"" . $templates->get(
-                                'postbit_profilefield_multiselect'
-                            ) . "\";"
-                        );
+                        $post['fieldvalue'] .= eval($templates->render('postbit_profilefield_multiselect'));
                     }
                 } else {
                     $field_parser_options = [
@@ -199,7 +196,6 @@ function postbit_announcement(array &$post): array
     return $post;
 }
 
-// New thread
 function newthread_start(): bool
 {
     global $mybb, $fid, $profiecats;
@@ -300,12 +296,12 @@ function newthread_do_newthread_start(): bool
     return true;
 }
 
-// Profile display
 function member_profile_end(): bool
 {
     global $mybb, $plugins, $parser, $templates, $theme, $lang;
     global $userfields, $memprofile, $bgcolor, $profiecats;
-    global $customfield, $ougcProfileFieldsCategoriesCurrentID, $ougcProfileFieldsCategoriesProfileContents, $field, $customfieldval, $type;
+    global $customfield, $field, $customfieldval, $type;
+    global $ougcProfileFieldsCategoriesCurrentID, $ougcProfileFieldsCategoriesProfileContents, $ougc_fileprofilefields;
 
     $categories = (array)$mybb->cache->read('ougc_profiecats_categories');
 
@@ -326,19 +322,24 @@ function member_profile_end(): bool
         $customfields = $ougcProfileFieldsCategoriesProfileContents = '';
 
         foreach ($profiecats->cache['profilefields'][$categoryData['cid']] as $customfield) {
-            /*~~~*/
             if ($mybb->usergroup['cancp'] != 1 && $mybb->usergroup['issupermod'] != 1 && $mybb->usergroup['canmodcp'] != 1 && !is_member(
                     $customfield['viewableby']
                 ) || !$customfield['profile']) {
                 continue;
             }
 
-            if (function_exists('xt_proffields_inp')) {
-                $field = "fid{$customfield['fid']}";
+            $field = "fid{$customfield['fid']}";
 
+            $thing = explode("\n", $customfield['type'], 2);
+            $type = trim($thing[0]);
+
+            $customfieldval = $customfield_val = '';
+
+            if (function_exists('xt_proffields_inp')) {
                 if (isset($userfields[$field])) {
                     $customfieldval = xt_proffields_disp($customfield, $userfields[$field]);
                 }
+
 
                 if ($customfieldval) {
                     $customfield['name'] = htmlspecialchars_uni($customfield['name']);
@@ -356,14 +357,10 @@ function member_profile_end(): bool
                     $bgcolor = alt_trow();
                 }
 
+                //$field !== 'fid18' || _dump(2, $field, $customfieldval, $preview, $ougc_fileprofilefields);
+
                 continue;
             }
-
-            $thing = explode("\n", $customfield['type'], 2);
-            $type = trim($thing[0]);
-
-            $customfieldval = $customfield_val = '';
-            $field = "fid{$customfield['fid']}";
 
             $plugins->run_hooks('ougc_plugins_customfields_profile_start');
 
@@ -373,19 +370,15 @@ function member_profile_end(): bool
                 if (is_array($useropts) && ($type == 'multiselect' || $type == 'checkbox')) {
                     foreach ($useropts as $val) {
                         if ($val != '') {
-                            eval(
-                                "\$customfield_val .= \"" . $templates->get(
-                                    'member_profile_customfields_field_multi_item'
-                                ) . "\";"
+                            $customfield_val .= eval(
+                            $templates->render(
+                                'member_profile_customfields_field_multi_item'
+                            )
                             );
                         }
                     }
                     if ($customfield_val != '') {
-                        eval(
-                            "\$customfieldval = \"" . $templates->get(
-                                'member_profile_customfields_field_multi'
-                            ) . "\";"
-                        );
+                        $customfieldval = eval($templates->render('member_profile_customfields_field_multi'));
                     }
                 } else {
                     $parser_options = [
@@ -454,6 +447,14 @@ function usercp_profile_end(): bool
     global $userfields, $memprofile, $bgcolor, $user, $user_fields, $errors, $xtpf_inp, $profiecats;
     global $maxlength, $code, $ougc_fileprofilefields, $field, $profilefield, $type;
 
+    if (function_exists('xt_proffields_load')) {
+        //xt_proffields_load($user);
+
+        if (isset($mybb->input['profile_fields'][$field])) {
+            //xt_proffields_load($mybb->input['profile_fields']);
+        }
+    }
+
     //global $customfield, , , , $profilefields;
 
     if (!empty($user_fields)) {
@@ -501,141 +502,177 @@ function usercp_profile_end(): bool
                 continue;
             }
 
+            $field = "fid{$profilefield['fid']}";
+
             $profilefield['type'] = htmlspecialchars_uni($profilefield['type']);
+
             $profilefield['name'] = htmlspecialchars_uni($profilefield['name']);
+
             $profilefield['description'] = htmlspecialchars_uni($profilefield['description']);
+
             $thing = explode("\n", $profilefield['type'], 2);
             $type = $thing[0];
+
             if (isset($thing[1])) {
                 $options = $thing[1];
             } else {
                 $options = [];
             }
-            $field = "fid{$profilefield['fid']}";
+
+
             $select = '';
+
             if ($errors) {
                 if (!isset($mybb->input['profile_fields'][$field])) {
                     $mybb->input['profile_fields'][$field] = '';
                 }
+
                 $userfield = $mybb->input['profile_fields'][$field];
             } else {
                 $userfield = $user[$field];
             }
-            if ($type == 'multiselect') {
+
+            if (function_exists('xt_proffields_load')) {
+                $vars = [];
+
+                $code = xt_proffields_inp($profilefield, $user, $errors, $vars);
+            } elseif ($type == 'multiselect') {
                 if ($errors) {
                     $useropts = $userfield;
                 } else {
                     $useropts = explode("\n", $userfield);
                 }
+
                 if (is_array($useropts)) {
                     foreach ($useropts as $key => $val) {
                         $val = htmlspecialchars_uni($val);
+
                         $seloptions[$val] = $val;
                     }
                 }
+
                 $expoptions = explode("\n", $options);
+
                 if (is_array($expoptions)) {
                     foreach ($expoptions as $key => $val) {
                         $val = trim($val);
+
                         $val = str_replace("\n", "\\n", $val);
 
                         $sel = '';
+
                         if (isset($seloptions[$val]) && $val == $seloptions[$val]) {
                             $sel = " selected=\"selected\"";
                         }
 
-                        eval("\$select .= \"" . $templates->get('usercp_profile_profilefields_select_option') . "\";");
+                        $select .= eval($templates->render('usercp_profile_profilefields_select_option'));
                     }
+
                     if (!$profilefield['length']) {
                         $profilefield['length'] = 3;
                     }
 
-                    eval("\$code = \"" . $templates->get('usercp_profile_profilefields_multiselect') . "\";");
+                    $code = eval($templates->render('usercp_profile_profilefields_multiselect'));
                 }
             } elseif ($type == 'select') {
                 $expoptions = explode("\n", $options);
+
                 if (is_array($expoptions)) {
                     foreach ($expoptions as $key => $val) {
                         $val = trim($val);
+
                         $val = str_replace("\n", "\\n", $val);
+
                         $sel = '';
+
                         if ($val == htmlspecialchars_uni($userfield)) {
                             $sel = " selected=\"selected\"";
                         }
 
-                        eval("\$select .= \"" . $templates->get('usercp_profile_profilefields_select_option') . "\";");
+                        $select .= eval($templates->render('usercp_profile_profilefields_select_option'));
                     }
                     if (!$profilefield['length']) {
                         $profilefield['length'] = 1;
                     }
 
-                    eval("\$code = \"" . $templates->get('usercp_profile_profilefields_select') . "\";");
+                    $code = eval($templates->render('usercp_profile_profilefields_select'));
                 }
             } elseif ($type == 'radio') {
                 $userfield = htmlspecialchars_uni($userfield);
+
                 $expoptions = explode("\n", $options);
+
                 if (is_array($expoptions)) {
                     foreach ($expoptions as $key => $val) {
                         $checked = '';
+
                         if ($val == $userfield) {
                             $checked = " checked=\"checked\"";
                         }
 
-                        eval("\$code .= \"" . $templates->get('usercp_profile_profilefields_radio') . "\";");
+                        $code .= eval($templates->render('usercp_profile_profilefields_radio'));
                     }
                 }
             } elseif ($type == 'checkbox') {
                 $userfield = htmlspecialchars_uni($userfield);
+
                 if ($errors) {
                     $useropts = $userfield;
                 } else {
                     $useropts = explode("\n", $userfield);
                 }
+
                 if (is_array($useropts)) {
                     foreach ($useropts as $key => $val) {
                         $seloptions[$val] = $val;
                     }
                 }
+
                 $expoptions = explode("\n", $options);
+
                 if (is_array($expoptions)) {
                     foreach ($expoptions as $key => $val) {
                         $checked = '';
+
                         if (isset($seloptions[$val]) && $val == $seloptions[$val]) {
                             $checked = " checked=\"checked\"";
                         }
 
-                        eval("\$code .= \"" . $templates->get('usercp_profile_profilefields_checkbox') . "\";");
+                        $code .= eval($templates->render('usercp_profile_profilefields_checkbox'));
                     }
                 }
             } elseif ($type == 'textarea') {
                 $value = htmlspecialchars_uni($userfield);
-                eval("\$code = \"" . $templates->get('usercp_profile_profilefields_textarea') . "\";");
+
+                $code = eval($templates->render('usercp_profile_profilefields_textarea'));
             } else {
                 $value = htmlspecialchars_uni($userfield);
+
                 $maxlength = '';
+
                 if ($profilefield['maxlength'] > 0) {
                     $maxlength = " maxlength=\"{$profilefield['maxlength']}\"";
                 }
 
-                eval("\$code = \"" . $templates->get('usercp_profile_profilefields_text') . "\";");
+                $code = eval($templates->render('usercp_profile_profilefields_text'));
             }
 
             $plugins->run_hooks('ougc_plugins_customfields_usercp_end');
 
-            if ($profilefield['required'] == 1) {
-                eval("\$requiredfields .= \"" . $templates->get('usercp_profile_customfield') . "\";");
+            if (function_exists('xt_proffields_load') && !empty($profilefield['xt_proffields_cinp'])) {
+                $xtpf_inp['fid' . $profilefield['fid']] = xt_proffields_cinp($profilefield, $vars);
+                //$customfields .= $xtpf_inp['fid'.$profilefield['fid']];
+            } elseif (!empty($profilefield['required'])) {
+                $requiredfields .= eval($templates->render('usercp_profile_customfield'));
             } else {
-                eval("\$customfields .= \"" . $templates->get('usercp_profile_customfield') . "\";");
+                $customfields .= eval($templates->render('usercp_profile_customfield'));
             }
+
             $altbg = alt_trow();
-            $code = '';
-            $select = '';
-            $val = '';
-            $options = '';
-            $expoptions = '';
-            $useropts = '';
+
+            $code = $select = $val = $options = $expoptions = $useropts = '';
+
             $seloptions = [];
-            /*~~~*/
         }
 
         if ($requiredfields) {
