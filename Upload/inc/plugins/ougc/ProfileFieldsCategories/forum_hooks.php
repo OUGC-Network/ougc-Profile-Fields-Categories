@@ -340,6 +340,7 @@ function member_profile_end(): bool
                     $customfieldval = xt_proffields_disp($customfield, $userfields[$field]);
                 }
 
+                $plugins->run_hooks('ougc_plugins_customfields_profile_start');
 
                 if ($customfieldval) {
                     $customfield['name'] = htmlspecialchars_uni($customfield['name']);
