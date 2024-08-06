@@ -332,6 +332,7 @@ function customTemplateIsSet(string $templateName): bool
 function buildFieldsCategories(array &$userData, $templatePrefix = 'memberList'): bool
 {
     global $mybb, $plugins, $parser, $lang, $profiecats;
+    global $theme;
 
     if (!($parser instanceof postParser)) {
         require_once MYBB_ROOT . 'inc/class_parser.php';
@@ -367,6 +368,8 @@ function buildFieldsCategories(array &$userData, $templatePrefix = 'memberList')
         $categoryTitleString = $lang->{"ougcProfileFieldsCategories_{$templatePrefix}Title"};
 
         $profileFieldsItems = '';
+
+        $alternativeBackground = alt_trow(true);
 
         foreach ($categoryProfileFields as $profileFieldData) {
             if (!is_member($profileFieldData['viewableby'])) {
@@ -455,6 +458,8 @@ function buildFieldsCategories(array &$userData, $templatePrefix = 'memberList')
             } else {
                 $profileFieldsItems .= eval(getTemplate("{$templatePrefix}Field"));
             }
+
+            $alternativeBackground = alt_trow();
         }
 
         if ($profileFieldsItems) {
