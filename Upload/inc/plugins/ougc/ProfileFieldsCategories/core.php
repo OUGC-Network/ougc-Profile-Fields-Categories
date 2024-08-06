@@ -403,27 +403,27 @@ function buildFieldsCategories(array &$userData, $templatePrefix = 'memberList')
 
                 foreach ($userFieldOptions as $userFieldOption) {
                     if (!empty($userFieldOption)) {
-                        if (customTemplateIsSet("{$templatePrefix}ProfileFieldMultiSelectValueCategory{$categoryID}")) {
+                        if (customTemplateIsSet("{$templatePrefix}FieldMultiSelectValueCategory{$categoryID}")) {
                             $userFieldValueOption .= eval(
                             getTemplate(
-                                "{$templatePrefix}ProfileFieldMultiSelectValueCategory{$categoryID}"
+                                "{$templatePrefix}FieldMultiSelectValueCategory{$categoryID}"
                             )
                             );
                         } else {
-                            $userFieldValueOption .= eval(getTemplate("{$templatePrefix}ProfileFieldMultiSelectValue"));
+                            $userFieldValueOption .= eval(getTemplate("{$templatePrefix}FieldMultiSelectValue"));
                         }
                     }
                 }
 
                 if (!empty($userFieldValueOption)) {
-                    if (customTemplateIsSet("{$templatePrefix}ProfileFieldMultiSelectCategory{$categoryID}")) {
+                    if (customTemplateIsSet("{$templatePrefix}FieldMultiSelectCategory{$categoryID}")) {
                         $userFieldValue .= eval(
                         getTemplate(
-                            "{$templatePrefix}ProfileFieldMultiSelectCategory{$categoryID}"
+                            "{$templatePrefix}FieldMultiSelectCategory{$categoryID}"
                         )
                         );
                     } else {
-                        $userFieldValue .= eval(getTemplate("{$templatePrefix}ProfileFieldMultiSelect"));
+                        $userFieldValue .= eval(getTemplate("{$templatePrefix}FieldMultiSelect"));
                     }
                 }
             } else {
@@ -453,7 +453,7 @@ function buildFieldsCategories(array &$userData, $templatePrefix = 'memberList')
 
             $plugins->run_hooks('ougc_profile_fields_categories_build_fields_categories_end', $hookArguments);
 
-            if (customTemplateIsSet("{$templatePrefix}ProfileFieldCategory{$categoryID}")) {
+            if (customTemplateIsSet("{$templatePrefix}FieldCategory{$categoryID}")) {
                 $profileFieldsItems .= eval(getTemplate("{$templatePrefix}FieldCategory{$categoryID}"));
             } else {
                 $profileFieldsItems .= eval(getTemplate("{$templatePrefix}Field"));

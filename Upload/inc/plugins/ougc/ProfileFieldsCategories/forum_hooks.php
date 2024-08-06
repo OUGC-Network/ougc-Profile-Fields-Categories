@@ -52,6 +52,12 @@ function global_start01(): bool
     $profiecats->cache['original'] = $profilefields = $cache->read('profilefields');
 
     if ($profilefields) {
+        $mainPrefix = 'ougcprofiecats_';
+
+        $fileFieldsPrefix = 'ougcfileprofilefields_';
+
+        $templatePrefixes = ['profile', 'postBit', 'memberList'];
+
         foreach ($profilefields as $key => $field) {
             $categoryID = (int)$field['cid'];
 
@@ -60,11 +66,11 @@ function global_start01(): bool
 
                 $profiecats->cache['profilefields'][$categoryID][$key] = $field;
 
-                $templatelist .= ",member_profile_customfields_field_category{$categoryID},member_profile_customfields_category{$categoryID}";
+                foreach ($templatePrefixes as $templatePrefix) {
+                    $templatelist .= ", {$mainPrefix}{$templatePrefix}FieldMultiSelectValueCategory{$categoryID}, {$mainPrefix}{$templatePrefix}FieldMultiSelectCategory{$categoryID}, {$mainPrefix}{$templatePrefix}FieldCategory{$categoryID}, {$mainPrefix}{$templatePrefix}Category{$categoryID}";
 
-                $templatelist .= ",ougcfileprofilefields_profile_file_category{$categoryID},ougcfileprofilefields_profile_status_category{$categoryID},ougcfileprofilefields_profile_status_mod_category{$categoryID}";
-
-                $templatelist .= ", ougcfileprofilefields_memberListStatusModeratorCategory{$categoryID}, ougcfileprofilefields_memberListStatusCategory{$categoryID}, ougcfileprofilefields_memberListFileCategory{$categoryID}, ougcfileprofilefields_memberListFileThumbnailCategory{$categoryID}";
+                    $templatelist .= ", {$fileFieldsPrefix}{$templatePrefix}StatusModeratorCategory{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}StatusCategory{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}FileThumbnailCategory{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}FileCategory{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}Category{$categoryID}";
+                }
             }
         }
     }
@@ -298,10 +304,7 @@ function newthread_do_newthread_start(): bool
 
 function member_profile_end(): bool
 {
-    global $mybb, $plugins, $parser, $templates, $theme, $lang;
-    global $userfields, $memprofile, $bgcolor, $profiecats;
-    global $customfield, $field, $customfieldval, $type;
-    global $ougcProfileFieldsCategoriesCurrentID, $ougcProfileFieldsCategoriesProfileContents, $ougc_fileprofilefields;
+    global $memprofile;
 
     buildFieldsCategories($memprofile, 'profile');
 
