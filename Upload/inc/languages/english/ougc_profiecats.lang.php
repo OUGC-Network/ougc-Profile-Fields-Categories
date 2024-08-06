@@ -37,4 +37,6 @@ $l = [
     'ougcProfileFieldsCategories_memberListTitle' => 'Information',
 
     'ougcProfileFieldsCategories_profileTitle' => 'Information',
+
+    'ougcProfileFieldsCategories_postBitTitle' => 'Information',
 ];

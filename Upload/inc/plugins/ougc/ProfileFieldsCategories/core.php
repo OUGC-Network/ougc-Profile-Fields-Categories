@@ -322,11 +322,11 @@ function customTemplateIsSet(string $templateName): bool
         if (file_exists($filePath)) {
             $templateContents = file_get_contents($filePath);
 
-            $templates->cache["ougcprofiecats{$templateName}"] = $templateContents;
+            $templates->cache["ougcprofiecats_{$templateName}"] = $templateContents;
         }
     }
 
-    return isset($templates->cache["ougcprofiecats{$templateName}"]);
+    return isset($templates->cache["ougcprofiecats_{$templateName}"]);
 }
 
 function buildFieldsCategories(array &$userData, $templatePrefix = 'memberList'): bool
@@ -396,7 +396,10 @@ function buildFieldsCategories(array &$userData, $templatePrefix = 'memberList')
 
             $userFieldOptions = explode("\n", $userData[$fieldIdentifier]);
 
-            $plugins->run_hooks('ougc_profile_fields_categories_build_fields_categories_start', $hookArguments);
+            $hookArguments = $plugins->run_hooks(
+                'ougc_profile_fields_categories_build_fields_categories_start',
+                $hookArguments
+            );
 
             if (is_array($userFieldOptions) && in_array($fieldType, ['multiselect', 'checkbox'])) {
                 $userFieldValueOption = '';
@@ -451,7 +454,10 @@ function buildFieldsCategories(array &$userData, $templatePrefix = 'memberList')
 
             $hookArguments['userFieldValue'] = &$userFieldValue;
 
-            $plugins->run_hooks('ougc_profile_fields_categories_build_fields_categories_end', $hookArguments);
+            $hookArguments = $plugins->run_hooks(
+                'ougc_profile_fields_categories_build_fields_categories_end',
+                $hookArguments
+            );
 
             if (customTemplateIsSet("{$templatePrefix}FieldCategory{$categoryID}")) {
                 $profileFieldsItems .= eval(getTemplate("{$templatePrefix}FieldCategory{$categoryID}"));
