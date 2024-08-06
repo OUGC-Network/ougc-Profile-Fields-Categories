@@ -451,9 +451,9 @@ function buildFieldsCategories(array &$userData, $templatePrefix = 'memberList')
             $plugins->run_hooks('ougc_profile_fields_categories_build_fields_categories_end', $hookArguments);
 
             if (customTemplateIsSet("{$templatePrefix}ProfileFieldCategory{$categoryID}")) {
-                $profileFieldsItems .= eval(getTemplate("{$templatePrefix}ProfileFieldCategory{$categoryID}"));
+                $profileFieldsItems .= eval(getTemplate("{$templatePrefix}FieldCategory{$categoryID}"));
             } else {
-                $profileFieldsItems .= eval(getTemplate("{$templatePrefix}ProfileField"));
+                $profileFieldsItems .= eval(getTemplate("{$templatePrefix}Field"));
             }
         }
 

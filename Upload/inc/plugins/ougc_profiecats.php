@@ -178,7 +178,6 @@ if (!function_exists('control_db')) {
     }
 }
 
-// Plugin Class
 class OUGC_ProfiecatsCache
 {
     public $cache = [

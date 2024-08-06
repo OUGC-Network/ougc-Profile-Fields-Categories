@@ -35,4 +35,6 @@ $l = [
     'ougc_profiecats_newthread_error' => 'To be able to create threads in this forum you need to fill your <b>{1}</b> field under the <b>{2}</b> category in your profile control panel.<br /><br />Please fill this field before proceeding <a href="{3}/usercp.php?action=profile">here</a>.',
 
     'ougcProfileFieldsCategories_memberListTitle' => 'Information',
+
+    'ougcProfileFieldsCategories_profileTitle' => 'Information',
 ];
