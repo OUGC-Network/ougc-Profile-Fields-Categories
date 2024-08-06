@@ -69,7 +69,7 @@ function global_start01(): bool
                 foreach ($templatePrefixes as $templatePrefix) {
                     $templatelist .= ", {$mainPrefix}{$templatePrefix}FieldMultiSelectValueCategory{$categoryID}, {$mainPrefix}{$templatePrefix}FieldMultiSelectCategory{$categoryID}, {$mainPrefix}{$templatePrefix}FieldCategory{$categoryID}, {$mainPrefix}{$templatePrefix}Category{$categoryID}";
 
-                    $templatelist .= ", {$fileFieldsPrefix}{$templatePrefix}StatusModeratorCategory{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}StatusCategory{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}FileThumbnailCategory{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}FileCategory{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}Category{$categoryID}";
+                    $templatelist .= ", {$fileFieldsPrefix}{$templatePrefix}StatusModeratorCategory{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}StatusCategory{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}ThumbnailCategory{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}Category{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}Category{$categoryID}";
                 }
             }
         }

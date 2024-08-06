@@ -45,7 +45,7 @@ define('OUGCProfiecats\Core\SETTINGS', [
     //'key' => '',
 ]);
 
-define('OUGCProfiecats\Core\DEBUG', true);
+define('OUGCProfiecats\Core\DEBUG', false);
 
 define('OUGCProfiecats\ROOT', constant('MYBB_ROOT') . 'inc/plugins/ougc/ProfileFieldsCategories');
 
