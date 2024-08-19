@@ -121,7 +121,11 @@ function getTemplate(string $templateName = '', bool $enableHTMLComments = true)
     if (DEBUG) {
         $filePath = ROOT . "/templates/{$templateName}.html";
 
-        $templateContents = file_get_contents($filePath);
+        $templateContents = '';
+
+        if (file_exists($filePath)) {
+            $templateContents = file_get_contents($filePath);
+        }
 
         $templates->cache[getTemplateName($templateName)] = $templateContents;
     } elseif (my_strpos($templateName, '/') !== false) {
@@ -371,6 +375,10 @@ function buildFieldsCategories(array &$userData, $templatePrefix = 'memberList')
 
         $alternativeBackground = alt_trow(true);
 
+        global $userFieldValueRawArray;
+
+        $userFieldValueRawArray = [];
+
         foreach ($categoryProfileFields as $profileFieldData) {
             if (!is_member($profileFieldData['viewableby'])) {
                 continue;
@@ -459,14 +467,22 @@ function buildFieldsCategories(array &$userData, $templatePrefix = 'memberList')
                 $hookArguments
             );
 
+            $userFieldValueRawArray[] = $userData[$fieldIdentifier];
+
             if (customTemplateIsSet("{$templatePrefix}FieldCategory{$categoryID}")) {
-                $profileFieldsItems .= eval(getTemplate("{$templatePrefix}FieldCategory{$categoryID}"));
+                $profileFieldsItems .= eval(getTemplate("{$templatePrefix}FieldCategory{$categoryID}", false));
             } else {
-                $profileFieldsItems .= eval(getTemplate("{$templatePrefix}Field"));
+                $profileFieldsItems .= eval(getTemplate("{$templatePrefix}Field", false));
             }
 
             $alternativeBackground = alt_trow();
         }
+
+        // this is for custom usage
+        $userFieldValueRawArrayConcatenated = "'{$mybb->settings['bburl']}/ougc_fileprofilefields.php?aid=" . implode(
+                "','{$mybb->settings['bburl']}/ougc_fileprofilefields.php?aid=",
+                $userFieldValueRawArray
+            ) . "'";
 
         if ($profileFieldsItems) {
             if (customTemplateIsSet("{$templatePrefix}Category{$categoryID}")) {
