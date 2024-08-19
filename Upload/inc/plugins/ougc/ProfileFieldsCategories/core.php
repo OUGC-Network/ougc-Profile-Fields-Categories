@@ -479,3 +479,43 @@ function buildFieldsCategories(array &$userData, $templatePrefix = 'memberList')
 
     return true;
 }
+
+function controlProfileFieldsCache()
+{
+    global $cache, $profiecats;
+    global $templatelist;
+
+    if (!isset($templatelist)) {
+        $templatelist = '';
+    } else {
+        $templatelist .= ',';
+    }
+
+    $profiecats->cache['original'] = $profilefields = $cache->read('profilefields');
+
+    if ($profilefields) {
+        $mainPrefix = 'ougcprofiecats_';
+
+        $fileFieldsPrefix = 'ougcfileprofilefields_';
+
+        $templatePrefixes = ['profile', 'postBit', 'memberList', 'userControlPanel', 'moderatorControlPanel'];
+
+        foreach ($profilefields as $profileFieldKey => $profileFieldData) {
+            $categoryID = (int)$profileFieldData['cid'];
+
+            if ($categoryID) {
+                unset($profilefields[$profileFieldKey]);
+
+                $profiecats->cache['profilefields'][$categoryID][$profileFieldKey] = $profileFieldData;
+
+                foreach ($templatePrefixes as $templatePrefix) {
+                    $templatelist .= ", {$mainPrefix}{$templatePrefix}FieldMultiSelectValueCategory{$categoryID}, {$mainPrefix}{$templatePrefix}FieldMultiSelectCategory{$categoryID}, {$mainPrefix}{$templatePrefix}FieldCategory{$categoryID}, {$mainPrefix}{$templatePrefix}Category{$categoryID}";
+
+                    $templatelist .= ", {$fileFieldsPrefix}{$templatePrefix}StatusModeratorCategory{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}StatusCategory{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}ThumbnailCategory{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}Category{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}Category{$categoryID}";
+                }
+            }
+        }
+    }
+
+    $profiecats->cache['modified'] = $cache->cache['profilefields'] = $profilefields;
+}

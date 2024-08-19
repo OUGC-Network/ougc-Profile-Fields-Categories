@@ -33,6 +33,7 @@ namespace OUGCProfiecats\ForumHooks;
 use postParser;
 
 use function OUGCProfiecats\Core\buildFieldsCategories;
+use function OUGCProfiecats\Core\controlProfileFieldsCache;
 use function OUGCProfiecats\Core\getTemplate;
 use function OUGCProfiecats\Core\load_language;
 
@@ -40,41 +41,7 @@ function global_start01(): bool
 {
     global $templatelist;
 
-    if (!isset($templatelist)) {
-        $templatelist = '';
-    } else {
-        $templatelist .= ',';
-    }
-
-    global $cache, $profiecats;
-
-    $profiecats->cache['original'] = $profilefields = $cache->read('profilefields');
-
-    if ($profilefields) {
-        $mainPrefix = 'ougcprofiecats_';
-
-        $fileFieldsPrefix = 'ougcfileprofilefields_';
-
-        $templatePrefixes = ['profile', 'postBit', 'memberList', 'userControlPanel', 'moderatorControlPanel'];
-
-        foreach ($profilefields as $profileFieldKey => $profileFieldData) {
-            $categoryID = (int)$profileFieldData['cid'];
-
-            if ($categoryID) {
-                unset($profilefields[$profileFieldKey]);
-
-                $profiecats->cache['profilefields'][$categoryID][$profileFieldKey] = $profileFieldData;
-
-                foreach ($templatePrefixes as $templatePrefix) {
-                    $templatelist .= ", {$mainPrefix}{$templatePrefix}FieldMultiSelectValueCategory{$categoryID}, {$mainPrefix}{$templatePrefix}FieldMultiSelectCategory{$categoryID}, {$mainPrefix}{$templatePrefix}FieldCategory{$categoryID}, {$mainPrefix}{$templatePrefix}Category{$categoryID}";
-
-                    $templatelist .= ", {$fileFieldsPrefix}{$templatePrefix}StatusModeratorCategory{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}StatusCategory{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}ThumbnailCategory{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}Category{$categoryID}, {$fileFieldsPrefix}{$templatePrefix}Category{$categoryID}";
-                }
-            }
-        }
-    }
-
-    $profiecats->cache['modified'] = $cache->cache['profilefields'] = $profilefields;
+    controlProfileFieldsCache();
 
     if (THIS_SCRIPT == 'showthread.php') {
         $templatelist .= ',ougcprofiecats_postbit';

@@ -39,6 +39,7 @@ use PopupMenu;
 use Table;
 
 use function OUGCProfiecats\Core\clean_ints;
+use function OUGCProfiecats\Core\controlProfileFieldsCache;
 use function OUGCProfiecats\Core\delete_category;
 use function OUGCProfiecats\Core\generate_category_select;
 use function OUGCProfiecats\Core\get_category;
@@ -47,6 +48,11 @@ use function OUGCProfiecats\Core\load_language;
 use function OUGCProfiecats\Core\log_action;
 use function OUGCProfiecats\Core\update_cache;
 use function OUGCProfiecats\Core\update_category;
+
+function admin_load()
+{
+    controlProfileFieldsCache();
+}
 
 function admin_config_profile_fields_begin(): bool
 {

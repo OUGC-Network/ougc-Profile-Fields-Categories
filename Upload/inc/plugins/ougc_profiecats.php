@@ -184,14 +184,11 @@ class OUGC_ProfiecatsCache
         'original' => [],
         'profilefields' => [],
         'modified' => [],
-        'original' => [],
     ];
 
-    public $output = [
-    ];
+    public $output = [];
 
-    public $backup = [
-    ];
+    public $backup = [];
 }
 
 $GLOBALS['profiecats'] = new OUGC_ProfiecatsCache();
