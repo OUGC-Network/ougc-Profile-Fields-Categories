@@ -28,14 +28,14 @@
 
 declare(strict_types=1);
 
-namespace OUGCProfiecats\ForumHooks;
+namespace ougc\ProfileFieldsCategories\ForumHooks;
 
 use postParser;
 
-use function OUGCProfiecats\Core\buildFieldsCategories;
-use function OUGCProfiecats\Core\controlProfileFieldsCache;
-use function OUGCProfiecats\Core\getTemplate;
-use function OUGCProfiecats\Core\load_language;
+use function ougc\ProfileFieldsCategories\Core\buildFieldsCategories;
+use function ougc\ProfileFieldsCategories\Core\controlProfileFieldsCache;
+use function ougc\ProfileFieldsCategories\Core\getTemplate;
+use function ougc\ProfileFieldsCategories\Core\load_language;
 
 function global_start01(): bool
 {

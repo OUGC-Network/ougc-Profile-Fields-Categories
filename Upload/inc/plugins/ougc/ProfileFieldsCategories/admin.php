@@ -28,14 +28,14 @@
 
 declare(strict_types=1);
 
-namespace OUGCProfiecats\Admin;
+namespace ougc\ProfileFieldsCategories\Admin;
 
 use DirectoryIterator;
 
-use function OUGCProfiecats\Core\load_language;
-use function OUGCProfiecats\Core\load_pluginlibrary;
+use function ougc\ProfileFieldsCategories\Core\load_language;
+use function ougc\ProfileFieldsCategories\Core\load_pluginlibrary;
 
-use const OUGCProfiecats\ROOT;
+use const ougc\ProfileFieldsCategories\ROOT;
 
 function _info(): array
 {

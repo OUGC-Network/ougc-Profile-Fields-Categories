@@ -28,13 +28,13 @@
 
 declare(strict_types=1);
 
-namespace OUGCProfiecats\Core;
+namespace ougc\ProfileFieldsCategories\Core;
 
 use postParser;
 
-use function OUGCProfiecats\Admin\_info;
+use function ougc\ProfileFieldsCategories\Admin\_info;
 
-use const OUGCProfiecats\ROOT;
+use const ougc\ProfileFieldsCategories\ROOT;
 
 function load_language(): bool
 {

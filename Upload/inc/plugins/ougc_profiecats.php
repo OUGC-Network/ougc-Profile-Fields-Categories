@@ -28,26 +28,26 @@
 
 declare(strict_types=1);
 
-use function OUGCProfiecats\Admin\_activate;
-use function OUGCProfiecats\Admin\_deactivate;
-use function OUGCProfiecats\Admin\_info;
-use function OUGCProfiecats\Admin\_install;
-use function OUGCProfiecats\Admin\_is_installed;
-use function OUGCProfiecats\Admin\_uninstall;
-use function OUGCProfiecats\Core\addHooks;
+use function ougc\ProfileFieldsCategories\Admin\_activate;
+use function ougc\ProfileFieldsCategories\Admin\_deactivate;
+use function ougc\ProfileFieldsCategories\Admin\_info;
+use function ougc\ProfileFieldsCategories\Admin\_install;
+use function ougc\ProfileFieldsCategories\Admin\_is_installed;
+use function ougc\ProfileFieldsCategories\Admin\_uninstall;
+use function ougc\ProfileFieldsCategories\Core\addHooks;
 
-use const OUGCProfiecats\ROOT;
+use const ougc\ProfileFieldsCategories\ROOT;
 
 defined('IN_MYBB') || die('Direct initialization of this file is disallowed.');
 
 // You can uncomment the lines below to avoid storing some settings in the DB
-define('OUGCProfiecats\Core\SETTINGS', [
+define('ougc\ProfileFieldsCategories\Core\SETTINGS', [
     //'key' => '',
 ]);
 
-define('OUGCProfiecats\Core\DEBUG', false);
+define('ougc\ProfileFieldsCategories\Core\DEBUG', false);
 
-define('OUGCProfiecats\ROOT', constant('MYBB_ROOT') . 'inc/plugins/ougc/ProfileFieldsCategories');
+define('ougc\ProfileFieldsCategories\ROOT', constant('MYBB_ROOT') . 'inc/plugins/ougc/ProfileFieldsCategories');
 
 require_once ROOT . '/core.php';
 
@@ -59,11 +59,11 @@ if (defined('IN_ADMINCP')) {
     require_once ROOT . '/admin.php';
     require_once ROOT . '/admin_hooks.php';
 
-    addHooks('OUGCProfiecats\AdminHooks');
+    addHooks('ougc\ProfileFieldsCategories\AdminHooks');
 } else {
     require_once ROOT . '/forum_hooks.php';
 
-    addHooks('OUGCProfiecats\ForumHooks');
+    addHooks('ougc\ProfileFieldsCategories\ForumHooks');
 }
 
 // Plugin API

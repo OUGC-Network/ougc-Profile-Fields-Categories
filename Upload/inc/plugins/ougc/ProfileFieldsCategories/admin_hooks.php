@@ -28,7 +28,7 @@
 
 declare(strict_types=1);
 
-namespace OUGCProfiecats\AdminHooks;
+namespace ougc\ProfileFieldsCategories\AdminHooks;
 
 use Form;
 use FormContainer;
@@ -38,16 +38,16 @@ use PopupMenu;
 
 use Table;
 
-use function OUGCProfiecats\Core\clean_ints;
-use function OUGCProfiecats\Core\controlProfileFieldsCache;
-use function OUGCProfiecats\Core\delete_category;
-use function OUGCProfiecats\Core\generate_category_select;
-use function OUGCProfiecats\Core\get_category;
-use function OUGCProfiecats\Core\insert_category;
-use function OUGCProfiecats\Core\load_language;
-use function OUGCProfiecats\Core\log_action;
-use function OUGCProfiecats\Core\update_cache;
-use function OUGCProfiecats\Core\update_category;
+use function ougc\ProfileFieldsCategories\Core\clean_ints;
+use function ougc\ProfileFieldsCategories\Core\controlProfileFieldsCache;
+use function ougc\ProfileFieldsCategories\Core\delete_category;
+use function ougc\ProfileFieldsCategories\Core\generate_category_select;
+use function ougc\ProfileFieldsCategories\Core\get_category;
+use function ougc\ProfileFieldsCategories\Core\insert_category;
+use function ougc\ProfileFieldsCategories\Core\load_language;
+use function ougc\ProfileFieldsCategories\Core\log_action;
+use function ougc\ProfileFieldsCategories\Core\update_cache;
+use function ougc\ProfileFieldsCategories\Core\update_category;
 
 function admin_load()
 {
