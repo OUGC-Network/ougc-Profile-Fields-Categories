@@ -39,6 +39,7 @@ use PopupMenu;
 use Table;
 
 use function ougc\ProfileFieldsCategories\Core\clean_ints;
+use function ougc\ProfileFieldsCategories\Core\control_db;
 use function ougc\ProfileFieldsCategories\Core\controlProfileFieldsCache;
 use function ougc\ProfileFieldsCategories\Core\delete_category;
 use function ougc\ProfileFieldsCategories\Core\generate_category_select;
