@@ -413,12 +413,20 @@ function admin_config_profile_fields_begin(): bool
 }
 
 // Add/Edit fields
-function admin_formcontainer_end(): bool
+function admin_formcontainer_end(array &$hook_arguments): array
 {
-    global $run_module, $form_container, $lang;
+    global $run_module, $lang;
 
-    if ($run_module == 'config' && !empty($form_container->_title) && (!empty($lang->edit_profile_field) && $form_container->_title == $lang->edit_profile_field || !empty($lang->add_new_profile_field) && $form_container->_title == $lang->add_new_profile_field)) {
-        global $form, $mybb, $profile_field;
+    if (
+        $run_module == 'config' &&
+        !empty($hook_arguments['this']->_title) &&
+        (
+            !empty($lang->edit_profile_field) &&
+            $hook_arguments['this']->_title == $lang->edit_profile_field || !empty($lang->add_new_profile_field) &&
+            $hook_arguments['this']->_title == $lang->add_new_profile_field
+        )
+    ) {
+        global $mybb, $profile_field;
 
         load_language();
 
@@ -431,14 +439,14 @@ function admin_formcontainer_end(): bool
             'select' => ' checked="checked"'
         ] : ['all' => 'checked="checked"', 'select' => '']);
 
-        $form_container->output_row(
+        $hook_arguments['this']->output_row(
             $lang->ougc_profiecats_admin_category,
             $lang->ougc_profiecats_admin_category_desc,
             generate_category_select('category', $mybb->get_input('category', MyBB::INPUT_INT))
         );
     }
 
-    return true;
+    return $hook_arguments;
 }
 
 // Commit changes
