@@ -197,7 +197,7 @@ function member_profile_end(): bool
 {
     global $memprofile, $userfields;
 
-    $userfields = array_merge($memprofile, $userfields);
+    $userfields = array_merge($memprofile, (array)$userfields);
 
     buildFieldsCategories($userfields, 'profile');
 
