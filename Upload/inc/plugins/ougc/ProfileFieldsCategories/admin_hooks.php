@@ -33,9 +33,7 @@ namespace ougc\ProfileFieldsCategories\AdminHooks;
 use Form;
 use FormContainer;
 use MyBB;
-
 use PopupMenu;
-
 use Table;
 
 use function ougc\ProfileFieldsCategories\Core\clean_ints;
@@ -52,7 +50,7 @@ use function ougc\ProfileFieldsCategories\Core\update_category;
 
 function admin_load()
 {
-    controlProfileFieldsCache();
+    //controlProfileFieldsCache();
 }
 
 function admin_config_profile_fields_begin(): bool

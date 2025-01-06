@@ -77,8 +77,8 @@ A setup that meets the following requirements is necessary to use this plugin.
    │ │ │ │ │ ├── postBitFieldMultiSelectValue
    │ │ │ │ │ ├── profile
    │ │ │ │ │ ├── profileField
-   │ │ │ │ │ ├── profileMultiSelect
-   │ │ │ │ │ ├── profileMultiSelectValue
+   │ │ │ │ │ ├── profileFieldMultiSelect
+   │ │ │ │ │ ├── profileFieldMultiSelectValue
    │ │ │ │ │ ├── userControlPanelField
    │ │ │ │ │ ├── userControlPanelFieldCheckBox
    │ │ │ │ │ ├── userControlPanelFieldMultiSelect
