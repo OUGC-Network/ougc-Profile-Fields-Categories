@@ -2,7 +2,7 @@
 
 /***************************************************************************
  *
- *    OUGC Profile Fields Categories plugin (/inc/languages/english/admin/ougc_profiecats.lang.php)
+ *    ougc Profile Fields Categories plugin (/inc/languages/english/admin/ougc_profiecats.lang.php)
  *    Author: Omar Gonzalez
  *    Copyright: © 2014 Omar Gonzalez
  *
@@ -27,7 +27,7 @@
  ****************************************************************************/
 
 // Plugin API
-$l['setting_group_ougc_profiecats'] = 'OUGC Profile Fields Categories';
+$l['setting_group_ougc_profiecats'] = 'Profile Fields Categories';
 $l['setting_group_ougc_profiecats_desc'] = 'Allow administrators to create custom profile fields categories.';
 
 // ACP Page

@@ -2,7 +2,7 @@
 
 /***************************************************************************
  *
- *    OUGC Profile Fields Categories plugin (/inc/languages/english/ougc_profiecats.lang.php)
+ *    ougc Profile Fields Categories plugin (/inc/languages/english/ougc_profiecats.lang.php)
  *    Author: Omar Gonzalez
  *    Copyright: © 2014 Omar Gonzalez
  *
@@ -28,7 +28,7 @@
 
 // Plugin API
 $l = [
-    'setting_group_ougc_profiecats' => 'OUGC Profile Fields Categories',
+    'setting_group_ougc_profiecats' => 'ougc Profile Fields Categories',
     'ougc_profiecats_profile_required' => '{1} Required Fields',
     'ougc_profiecats_additional_information' => '{1} Optional Fields',
     'ougc_profiecats_postbit' => '{1} Information',

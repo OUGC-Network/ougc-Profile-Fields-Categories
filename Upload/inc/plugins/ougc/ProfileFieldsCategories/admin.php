@@ -2,7 +2,7 @@
 
 /***************************************************************************
  *
- *    OUGC Profile Fields Categories plugin (/inc/plugins/ougc_profiecats/admin.php)
+ *    ougc Profile Fields Categories plugin (/inc/plugins/ougc_profiecats/admin.php)
  *    Author: Omar Gonzalez
  *    Copyright: © 2014 Omar Gonzalez
  *
@@ -44,7 +44,7 @@ function _info(): array
     load_language();
 
     return [
-        'name' => 'OUGC Profile Fields Categories',
+        'name' => 'ougc Profile Fields Categories',
         'description' => $lang->setting_group_ougc_profiecats_desc,
         'website' => 'https://ougc.network',
         'author' => 'Omar G.',
@@ -86,7 +86,7 @@ function _activate(): bool
     }
 
     if ($templates) {
-        $PL->templates('ougcprofiecats', 'OUGC Profile Fields Categories', $templates);
+        $PL->templates('ougcprofiecats', 'ougc Profile Fields Categories', $templates);
     }
 
     // Insert/update version into cache

@@ -2,7 +2,7 @@
 
 /***************************************************************************
  *
- *    OUGC Profile Fields Categories plugin (/inc/plugins/ougc_profiecats/admin_hooks.php)
+ *    ougc Profile Fields Categories plugin (/inc/plugins/ougc_profiecats/admin_hooks.php)
  *    Author: Omar Gonzalez
  *    Copyright: © 2014 Omar Gonzalez
  *
