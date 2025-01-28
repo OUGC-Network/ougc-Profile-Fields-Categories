@@ -28,7 +28,7 @@
 
 declare(strict_types=1);
 
-namespace ougc\ProfileFieldsCategories\ForumHooks;
+namespace ougc\ProfileFieldsCategories\Hooks\Forum;
 
 use postParser;
 

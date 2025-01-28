@@ -59,11 +59,11 @@ if (defined('IN_ADMINCP')) {
     require_once ROOT . '/admin.php';
     require_once ROOT . '/admin_hooks.php';
 
-    addHooks('ougc\ProfileFieldsCategories\AdminHooks');
+    addHooks('ougc\ProfileFieldsCategories\Hooks\Admin');
 } else {
     require_once ROOT . '/forum_hooks.php';
 
-    addHooks('ougc\ProfileFieldsCategories\ForumHooks');
+    addHooks('ougc\ProfileFieldsCategories\Hooks\Forum');
 }
 
 // Plugin API

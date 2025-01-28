@@ -28,7 +28,7 @@
 
 declare(strict_types=1);
 
-namespace ougc\ProfileFieldsCategories\AdminHooks;
+namespace ougc\ProfileFieldsCategories\Hooks\Admin;
 
 use Form;
 use FormContainer;
