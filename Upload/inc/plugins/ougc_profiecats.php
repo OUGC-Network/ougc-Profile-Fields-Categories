@@ -65,6 +65,9 @@ if (defined('IN_ADMINCP')) {
 
     addHooks('ougc\ProfileFieldsCategories\Hooks\Forum');
 }
+require_once ROOT . '/hooks/shared.php';
+
+addHooks('ougc\ProfileFieldsCategories\Hooks\Shared');
 
 // Plugin API
 function ougc_profiecats_info(): array
