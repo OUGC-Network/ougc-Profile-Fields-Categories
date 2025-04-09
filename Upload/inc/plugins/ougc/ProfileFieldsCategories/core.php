@@ -103,6 +103,15 @@ function addHooks(string $namespace): bool
     return true;
 }
 
+function getSetting(string $settingKey = '')
+{
+    global $mybb;
+
+    return SETTINGS[$settingKey] ?? (
+        $mybb->settings['ougcProfileFieldsCategories_' . $settingKey] ?? false
+    );
+}
+
 function getTemplateName(string $templateName = ''): string
 {
     $templatePrefix = '';
@@ -467,22 +476,27 @@ function buildFieldsCategories(array &$userData, $templatePrefix = 'memberList')
                 $hookArguments
             );
 
-            $userFieldValueRawArray[] = $userData[$fieldIdentifier];
+            if (empty($hookArguments['fileData']['status']) &&
+                isset($hookArguments['fileData']['status']) &&
+                getSetting('stockImageForFileFields')) {
+                $userFieldValueRawArray[] = "{$mybb->asset_url}/" . getSetting('stockImageForFileFields');
+            } else {
+                $userFieldValueRawArray[] = "{$mybb->settings['bburl']}/ougc_fileprofilefields.php?aid={$userData[$fieldIdentifier]}";
+            }
 
             if (customTemplateIsSet("{$templatePrefix}FieldCategory{$categoryID}")) {
-                $profileFieldsItems .= eval(getTemplate("{$templatePrefix}FieldCategory{$categoryID}", false));
+                $profileFieldsItems .= eval(getTemplate("{$templatePrefix}FieldCategory{$categoryID}"));
             } else {
-                $profileFieldsItems .= eval(getTemplate("{$templatePrefix}Field", false));
+                $profileFieldsItems .= eval(getTemplate("{$templatePrefix}Field"));
             }
 
             $alternativeBackground = alt_trow();
         }
 
+        // the idea here is to pass on an array containing the urls of images to use along some fancy/shadow box Javascript library in templates
+        //todo, this should be more generalized for broad usages
         // this is for custom usage
-        $userFieldValueRawArrayConcatenated = "'{$mybb->settings['bburl']}/ougc_fileprofilefields.php?aid=" . implode(
-                "','{$mybb->settings['bburl']}/ougc_fileprofilefields.php?aid=",
-                $userFieldValueRawArray
-            ) . "'";
+        $userFieldValueRawArrayConcatenated = "'" . implode("','", $userFieldValueRawArray) . "'";
 
         if ($profileFieldsItems) {
             if (customTemplateIsSet("{$templatePrefix}Category{$categoryID}")) {

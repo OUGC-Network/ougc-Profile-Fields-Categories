@@ -43,6 +43,7 @@ defined('IN_MYBB') || die('Direct initialization of this file is disallowed.');
 // You can uncomment the lines below to avoid storing some settings in the DB
 define('ougc\ProfileFieldsCategories\Core\SETTINGS', [
     //'key' => '',
+    //'stockImageForFileFields' => ''
 ]);
 
 define('ougc\ProfileFieldsCategories\Core\DEBUG', false);
@@ -51,7 +52,6 @@ define('ougc\ProfileFieldsCategories\ROOT', constant('MYBB_ROOT') . 'inc/plugins
 
 require_once ROOT . '/core.php';
 
-// PLUGINLIBRARY
 defined('PLUGINLIBRARY') || define('PLUGINLIBRARY', MYBB_ROOT . 'inc/plugins/pluginlibrary.php');
 
 // Add our hooks
@@ -69,37 +69,31 @@ require_once ROOT . '/hooks/shared.php';
 
 addHooks('ougc\ProfileFieldsCategories\Hooks\Shared');
 
-// Plugin API
 function ougc_profiecats_info(): array
 {
     return _info();
 }
 
-// Activate the plugin.
 function ougc_profiecats_activate(): bool
 {
     return _activate();
 }
 
-// Deactivate the plugin.
 function ougc_profiecats_deactivate(): bool
 {
     return _deactivate();
 }
 
-// Install the plugin.
 function ougc_profiecats_install(): bool
 {
     return _install();
 }
 
-// Check if installed.
 function ougc_profiecats_is_installed(): bool
 {
     return _is_installed();
 }
 
-// Unnstall the plugin.
 function ougc_profiecats_uninstall()
 {
     _uninstall();
