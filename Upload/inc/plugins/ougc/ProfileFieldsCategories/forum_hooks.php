@@ -397,7 +397,7 @@ function usercp_profile_end()
                             $checkedElement = 'checked="checked"';
                         }
 
-                        $fieldCode = eval(getTemplate('userControlPanelFieldCheckBox'));
+                        $fieldCode .= eval(getTemplate('userControlPanelFieldCheckBox'));
                     }
                 }
             } elseif ($type == 'textarea') {

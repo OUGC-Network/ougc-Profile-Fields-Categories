@@ -125,7 +125,7 @@ function admin_config_profile_fields_begin(): bool
 
         if ($mybb->request_method == 'post') {
             $errors = [];
-            if (!$mybb->get_input('name') || isset($mybb->input{100})) {
+            if (!$mybb->get_input('name')) {
                 $errors[] = $lang->ougc_profiecats_admin_error_invalid_name;
             }
 
