@@ -32,45 +32,13 @@ namespace ougc\ProfileFieldsCategories\Core;
 
 use postParser;
 
-use function ougc\ProfileFieldsCategories\Admin\_info;
-
 use const ougc\ProfileFieldsCategories\ROOT;
 
-function load_language(): bool
+function languageLoad(): bool
 {
     global $lang;
 
     isset($lang->setting_group_ougc_profiecats) || $lang->load('ougc_profiecats');
-
-    return true;
-}
-
-function load_pluginlibrary(bool $check = true): bool
-{
-    global $PL, $lang;
-
-    load_language();
-
-    if ($file_exists = file_exists(PLUGINLIBRARY)) {
-        global $PL;
-
-        $PL || require_once PLUGINLIBRARY;
-    }
-
-    if (!$check) {
-        return true;
-    }
-
-    $_info = _info();
-
-    if (!$file_exists || $PL->version < $_info['pl']['version']) {
-        flash_message(
-            $lang->sprintf($lang->ougc_profiecats_pluginlibrary, $_info['pl']['url'], $_info['pl']['version']),
-            'error'
-        );
-
-        admin_redirect('index.php?module=config-plugins');
-    }
 
     return true;
 }
@@ -144,8 +112,7 @@ function getTemplate(string $templateName = '', bool $enableHTMLComments = true)
     return $templates->render(getTemplateName($templateName), true, $enableHTMLComments);
 }
 
-// Log admin action
-function log_action(): bool
+function actionLogInsert(): bool
 {
     global $profiecats;
 
@@ -160,8 +127,7 @@ function log_action(): bool
     return true;
 }
 
-// Update the cache
-function update_cache(): bool
+function cacheUpdate(): bool
 {
     global $db, $cache;
 
@@ -177,33 +143,32 @@ function update_cache(): bool
     return true;
 }
 
-// Clean input
-function clean_ints(array $val): array
-{
-    foreach ($val as $k => &$v) {
-        $v = (int)$v;
-    }
-
-    return array_filter($val);
-}
-
-// Insert a new rate to the DB
-function insert_category(array $data, int $cid = 0, bool $update = false): bool
+function categoryInsert(array $categoryData, int $categoryID = 0, bool $isUpdate = false): bool
 {
     global $db, $profiecats;
 
     $cleandata = [];
 
-    !isset($data['name']) || $cleandata['name'] = $db->escape_string($data['name']);
-    !isset($data['forums']) || $cleandata['forums'] = $db->escape_string(
-        implode(',', clean_ints(is_array($data['forums']) ? $data['forums'] : explode(',', v)))
-    );
-    !isset($data['active']) || $cleandata['active'] = (int)$data['active'];
-    !isset($data['required']) || $cleandata['required'] = (int)$data['required'];
-    !isset($data['disporder']) || $cleandata['disporder'] = (int)$data['disporder'];
+    !isset($categoryData['name']) || $cleandata['name'] = $db->escape_string($categoryData['name']);
 
-    if ($update) {
-        $profiecats->cid = $cid;
+    !isset($categoryData['forums']) || $cleandata['forums'] = $db->escape_string(
+        implode(
+            ',',
+            array_map(
+                'intval',
+                is_array($categoryData['forums']) ? $categoryData['forums'] : explode(',', $categoryData['forums'])
+            )
+        )
+    );
+
+    !isset($categoryData['active']) || $cleandata['active'] = (int)$categoryData['active'];
+
+    !isset($categoryData['required']) || $cleandata['required'] = (int)$categoryData['required'];
+
+    !isset($categoryData['disporder']) || $cleandata['disporder'] = (int)$categoryData['disporder'];
+
+    if ($isUpdate) {
+        $profiecats->cid = $categoryID;
 
         $db->update_query('ougc_profiecats_categories', $cleandata, 'cid=\'' . $profiecats->cid . '\'');
     } else {
@@ -213,20 +178,18 @@ function insert_category(array $data, int $cid = 0, bool $update = false): bool
     return true;
 }
 
-// Update espesific rate
-function update_category(array $data, int $cid): bool
+function categoryUpdate(array $categoryData, int $categoryID): bool
 {
-    insert_category($data, $cid, true);
+    categoryInsert($categoryData, $categoryID, true);
 
     return true;
 }
 
-// Completely delete a category from the DB
-function delete_category(int $cid): bool
+function categoryDelete(int $categoryID): bool
 {
     global $db, $profiecats;
 
-    $profiecats->cid = $cid;
+    $profiecats->cid = $categoryID;
 
     $db->update_query('profilefields', ['cid' => 0], 'cid=\'' . $profiecats->cid . '\'');
 
@@ -235,11 +198,11 @@ function delete_category(int $cid): bool
     return true;
 }
 
-function get_category(int $cid): array
+function categoryGet(int $categoryID): array
 {
     global $db;
 
-    $query = $db->simple_select('ougc_profiecats_categories', '*', 'cid=\'' . (int)$cid . '\'');
+    $query = $db->simple_select('ougc_profiecats_categories', '*', 'cid=\'' . (int)$categoryID . '\'');
 
     if ($db->num_rows($query)) {
         return $db->fetch_array($query);
@@ -248,19 +211,16 @@ function get_category(int $cid): array
     return [];
 }
 
-// Generate a categories selection box.
-function generate_category_select(string $name, int $selected): string
+function generateCategorySelect(string $inputName, int $selectedID): string
 {
     global $db, $lang;
 
-    load_language();
+    languageLoad();
 
-    $selected = (int)$selected;
-
-    $select = "<select name=\"{$name}\">\n";
+    $select = "<select name=\"{$inputName}\">\n";
 
     $select_add = '';
-    if ($selected == 0) {
+    if ($selectedID == 0) {
         $select_add = ' selected="selected"';
     }
     $select .= "<option value=\"0\"{$select_add}>{$lang->ougc_profiecats_admin_none}</option>\n";
@@ -268,7 +228,7 @@ function generate_category_select(string $name, int $selected): string
     $query = $db->simple_select('ougc_profiecats_categories', '*', '', ['order_by' => 'name']);
     while ($category = $db->fetch_array($query)) {
         $select_add = '';
-        if ($selected == $category['cid']) {
+        if ($selectedID == $category['cid']) {
             $select_add = ' selected="selected"';
         }
 
@@ -279,20 +239,6 @@ function generate_category_select(string $name, int $selected): string
     $select .= "</select>\n";
 
     return $select;
-}
-
-function cache($key, $contents): bool
-{
-    static $cache = [
-        'original' => [],
-        'profilefields' => [],
-        'modified' => [],
-        'original' => [],
-    ];
-
-    $cache[$key] = $contents;
-
-    return true;
 }
 
 function getCachedProfileFieldsCategories(): array
@@ -353,7 +299,7 @@ function buildFieldsCategories(array &$userData, $templatePrefix = 'memberList')
         $parser = new postParser();
     }
 
-    load_language();
+    languageLoad();
 
     $profileFieldsCategories = getCachedProfileFieldsCategories();
 

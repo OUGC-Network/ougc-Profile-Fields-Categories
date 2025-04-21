@@ -35,7 +35,7 @@ use postParser;
 use function ougc\ProfileFieldsCategories\Core\buildFieldsCategories;
 use function ougc\ProfileFieldsCategories\Core\controlProfileFieldsCache;
 use function ougc\ProfileFieldsCategories\Core\getTemplate;
-use function ougc\ProfileFieldsCategories\Core\load_language;
+use function ougc\ProfileFieldsCategories\Core\languageLoad;
 
 function global_start01(): bool
 {
@@ -134,7 +134,7 @@ function newthread_start(): bool
 
     global $lang, $forum;
 
-    load_language();
+    languageLoad();
 
     if ($forum['rulestype'] && $forum['rules']) {
         global $parser, $templates, $theme, $rules;
@@ -220,7 +220,7 @@ function usercp_profile_end()
 
     $categories = (array)$mybb->cache->read('ougc_profiecats_categories');
 
-    load_language();
+    languageLoad();
 
     is_array($xtpf_inp) || $xtpf_inp = [];
 

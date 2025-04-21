@@ -28,12 +28,12 @@
 
 declare(strict_types=1);
 
-use function ougc\ProfileFieldsCategories\Admin\_activate;
-use function ougc\ProfileFieldsCategories\Admin\_deactivate;
-use function ougc\ProfileFieldsCategories\Admin\_info;
-use function ougc\ProfileFieldsCategories\Admin\_install;
-use function ougc\ProfileFieldsCategories\Admin\_is_installed;
-use function ougc\ProfileFieldsCategories\Admin\_uninstall;
+use function ougc\ProfileFieldsCategories\Admin\pluginActivation;
+use function ougc\ProfileFieldsCategories\Admin\pluginDeactivation;
+use function ougc\ProfileFieldsCategories\Admin\pluginInformation;
+use function ougc\ProfileFieldsCategories\Admin\pluginInstallation;
+use function ougc\ProfileFieldsCategories\Admin\pluginIsInstalled;
+use function ougc\ProfileFieldsCategories\Admin\pluginUninstallation;
 use function ougc\ProfileFieldsCategories\Core\addHooks;
 
 use const ougc\ProfileFieldsCategories\ROOT;
@@ -43,7 +43,7 @@ defined('IN_MYBB') || die('Direct initialization of this file is disallowed.');
 // You can uncomment the lines below to avoid storing some settings in the DB
 define('ougc\ProfileFieldsCategories\Core\SETTINGS', [
     //'key' => '',
-    //'stockImageForFileFields' => ''
+    'stockImageForFileFields' => 'images/stock-clock-icon.png'
 ]);
 
 define('ougc\ProfileFieldsCategories\Core\DEBUG', false);
@@ -71,32 +71,32 @@ addHooks('ougc\ProfileFieldsCategories\Hooks\Shared');
 
 function ougc_profiecats_info(): array
 {
-    return _info();
+    return pluginInformation();
 }
 
 function ougc_profiecats_activate(): bool
 {
-    return _activate();
+    return pluginActivation();
 }
 
 function ougc_profiecats_deactivate(): bool
 {
-    return _deactivate();
+    return pluginDeactivation();
 }
 
 function ougc_profiecats_install(): bool
 {
-    return _install();
+    return pluginInstallation();
 }
 
 function ougc_profiecats_is_installed(): bool
 {
-    return _is_installed();
+    return pluginIsInstalled();
 }
 
 function ougc_profiecats_uninstall()
 {
-    _uninstall();
+    pluginUninstallation();
 }
 
 class OUGC_ProfiecatsCache
